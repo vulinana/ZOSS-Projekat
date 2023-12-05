@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-04T22:56:39.225Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="5Vxu2SbRwSN97mLnFsO1" version="22.1.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-12-05T11:20:05.085Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="TVK06b-tZ-osp19ZDwZm" version="22.1.5" type="device">
   <diagram name="Page-1" id="qy5oMyCj6DyUfq8n0ZYG">
     <mxGraphModel dx="1050" dy="574" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -72,15 +72,6 @@
           <mxGeometry x="-0.0264" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-17" value="posgres db" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="20" y="480" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-19" value="slack mongo db&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" y="590" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-21" value="github mongo db&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="560" y="20" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-24" value="GITHUB ekst. servis&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="720" y="140" width="120" height="60" as="geometry" />
@@ -186,10 +177,10 @@
             <mxPoint x="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-57" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" target="a_1NUMiRRPviw614dyFZ-17" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-57" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0;entryDx=0;entryDy=15;entryPerimeter=0;" parent="1" target="WS3d3etD7pDIfHOqatuw-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="230" y="380" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="114.61538461538453" y="480" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-71" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-57" vertex="1" connectable="0">
@@ -197,10 +188,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-58" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-11" target="a_1NUMiRRPviw614dyFZ-21" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-58" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-11" target="WS3d3etD7pDIfHOqatuw-2" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="400" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="620" y="80" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-72" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-58" vertex="1" connectable="0">
@@ -208,10 +199,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-59" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-14" target="a_1NUMiRRPviw614dyFZ-19" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-59" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-14" target="WS3d3etD7pDIfHOqatuw-3" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="400" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="620" y="590" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-73" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-59" vertex="1" connectable="0">
@@ -247,10 +238,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-64" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.627;entryY=1.078;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-62" target="a_1NUMiRRPviw614dyFZ-17" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-64" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.747;entryY=0.955;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-62" target="WS3d3etD7pDIfHOqatuw-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="400" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="95.24000000000001" y="544.6800000000001" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-76" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-64" vertex="1" connectable="0">
@@ -282,6 +273,15 @@
           <mxGeometry x="0.1393" y="2" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="WS3d3etD7pDIfHOqatuw-1" value="posgres db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="30" y="460" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="WS3d3etD7pDIfHOqatuw-2" value="github mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="590" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="WS3d3etD7pDIfHOqatuw-3" value="slack mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="590" y="600" width="60" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

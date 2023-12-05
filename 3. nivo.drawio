@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-04T22:57:48.396Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="z0Mtue6xmKq2yFFPru_8" version="22.1.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-12-05T11:17:52.674Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="9C2avHEOUd3dgIRROzkq" version="22.1.5" type="device">
   <diagram name="Page-1" id="qy5oMyCj6DyUfq8n0ZYG">
     <mxGraphModel dx="1900" dy="1674" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -62,12 +62,6 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-19" value="slack mongo db&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="1130" y="590" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-21" value="github mongo db&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="890" y="40" width="120" height="60" as="geometry" />
-        </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-24" value="GITHUB ekst. servis&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1140" y="140" width="120" height="60" as="geometry" />
         </mxCell>
@@ -128,10 +122,10 @@
         <mxCell id="a_1NUMiRRPviw614dyFZ-49" value="fastforex - ekst. servis za konverziju valuta" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="610" y="-70" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-58" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-11" target="a_1NUMiRRPviw614dyFZ-21" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-58" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-11" target="V1H4uhzhcG99JM3irNWZ-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="400" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="950" y="100" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-72" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-58" vertex="1" connectable="0">
@@ -139,10 +133,10 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-59" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-14" target="a_1NUMiRRPviw614dyFZ-19" edge="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-59" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-14" target="V1H4uhzhcG99JM3irNWZ-2" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="400" as="sourcePoint" />
-            <mxPoint x="450" y="350" as="targetPoint" />
+            <mxPoint x="1190" y="590" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-73" value="TCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-59" vertex="1" connectable="0">
@@ -480,6 +474,12 @@
         </mxCell>
         <mxCell id="Pm9FaGsFuZ3yUe9X9QFe-54" value="slack rmq gateway" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="440" y="370" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="V1H4uhzhcG99JM3irNWZ-1" value="github mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="920" y="20" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="V1H4uhzhcG99JM3irNWZ-2" value="slack mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;direction=east;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="590" width="60" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

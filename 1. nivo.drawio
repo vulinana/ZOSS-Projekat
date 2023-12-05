@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" modified="2023-12-04T23:12:52.551Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="riL1TjALjS4ogrpWRzvF" version="22.1.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-12-05T11:15:29.739Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="9Jes6IDWQv1F6qBpw6RP" version="22.1.5" type="device">
   <diagram name="Page-1" id="qy5oMyCj6DyUfq8n0ZYG">
     <mxGraphModel dx="1050" dy="574" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="a_1NUMiRRPviw614dyFZ-2" value="Caddie app" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="220" y="320" width="160" height="80" as="geometry" />
+        <mxCell id="a_1NUMiRRPviw614dyFZ-2" value="Caddie - aplikacija koja prikuplja podatke sa integracija (github, slack) pa vrši transformaciju podataka u statistike. Sadrži kalendar i automatizovane izveštaje koje zaposleni mogu ispisati svaki dan." style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="170" y="320" width="200" height="150" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-5" value="redis - ekst. servis za kesiranje i cron job" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="270" y="50" width="90" height="60" as="geometry" />
@@ -178,7 +178,7 @@
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-74" value="https" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="a_1NUMiRRPviw614dyFZ-61" vertex="1" connectable="0">
           <mxGeometry x="-0.4978" y="2" relative="1" as="geometry">
-            <mxPoint x="-29" y="37" as="offset" />
+            <mxPoint x="-6" y="-2" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-65" value="stripe - ekst. servis za placanje" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -196,7 +196,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="e-tCrktRAHHtWVaOxMMw-2" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
-          <mxGeometry x="30" y="330" width="30" height="60" as="geometry" />
+          <mxGeometry x="30" y="365" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="e-tCrktRAHHtWVaOxMMw-3" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="e-tCrktRAHHtWVaOxMMw-2" target="a_1NUMiRRPviw614dyFZ-2" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
