@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-12-05T11:17:52.674Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="9C2avHEOUd3dgIRROzkq" version="22.1.5" type="device">
+<mxfile host="app.diagrams.net" modified="2023-12-09T22:19:48.166Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="TMayTcjGQd_cOgDMeTYZ" version="22.1.7" type="device">
   <diagram name="Page-1" id="qy5oMyCj6DyUfq8n0ZYG">
-    <mxGraphModel dx="1900" dy="1674" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3718" dy="2600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -17,10 +17,10 @@
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-5" value="redis - ekst. servis za kesiranje i cron job" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-5" value="redis&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="650" y="90" width="90" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-7" value="rabbit mq - queue za integraciju aplikacija" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-7" value="rabbitmq" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1130" y="320" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-8" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="Pm9FaGsFuZ3yUe9X9QFe-53" target="a_1NUMiRRPviw614dyFZ-7" edge="1">
@@ -116,10 +116,10 @@
         <mxCell id="a_1NUMiRRPviw614dyFZ-42" value="AWS S3 - file storage" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="600" y="770" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-45" value="sendgrid - ekst. servis za slanje mejlova" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-45" value="sendgrid" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="690" y="200" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-49" value="fastforex - ekst. servis za konverziju valuta" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-49" value="fastforex" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="610" y="-70" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-58" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="a_1NUMiRRPviw614dyFZ-11" target="V1H4uhzhcG99JM3irNWZ-1" edge="1">
@@ -144,7 +144,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-60" value="algolia - ekst. servis za pretragu" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-60" value="algolia" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="800" y="680" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-62" value="census - ETL" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -172,7 +172,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="a_1NUMiRRPviw614dyFZ-65" value="stripe - ekst. servis za placanje" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="a_1NUMiRRPviw614dyFZ-65" value="stripe" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="-190" y="790" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="a_1NUMiRRPviw614dyFZ-68" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" target="a_1NUMiRRPviw614dyFZ-65" edge="1">
@@ -325,7 +325,7 @@
             <mxPoint x="330" y="280" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Pm9FaGsFuZ3yUe9X9QFe-52" value="posgres db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+        <mxCell id="Pm9FaGsFuZ3yUe9X9QFe-52" value="postgreSQL DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
           <mxGeometry x="730" y="390" width="80" height="120" as="geometry" />
         </mxCell>
         <mxCell id="Pm9FaGsFuZ3yUe9X9QFe-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Pm9FaGsFuZ3yUe9X9QFe-53" target="Pm9FaGsFuZ3yUe9X9QFe-33" edge="1">
@@ -475,10 +475,10 @@
         <mxCell id="Pm9FaGsFuZ3yUe9X9QFe-54" value="slack rmq gateway" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="440" y="370" width="110" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="V1H4uhzhcG99JM3irNWZ-1" value="github mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+        <mxCell id="V1H4uhzhcG99JM3irNWZ-1" value="github Mongo DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
           <mxGeometry x="920" y="20" width="60" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="V1H4uhzhcG99JM3irNWZ-2" value="slack mongo db" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;direction=east;" vertex="1" parent="1">
+        <mxCell id="V1H4uhzhcG99JM3irNWZ-2" value="slack Mongo DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;direction=east;" parent="1" vertex="1">
           <mxGeometry x="1160" y="590" width="60" height="80" as="geometry" />
         </mxCell>
       </root>
