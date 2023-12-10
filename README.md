@@ -13,5 +13,5 @@ U folderu "Literatura" nalazi se dokument "Literatura.md" u kome su navedeni rad
 --------------------------------------------
 - Članovi tima
 
-Ana Vulin E2 62/2023
-Sara Sinjeri E2 66/2023
+1. Ana Vulin E2 62/2023
+2. Sara Sinjeri E2 66/2023
