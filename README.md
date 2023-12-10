@@ -1,3 +1,17 @@
-U folderu "Dijagrami arhitekture sistema" dostupan je C4 dijagram analiziranog enterprise sistema. Dostupni su dijagrami 1. (kontekstni dijagram), 2. (kontejner dijagram) i 3. nivoa (dijagram komponenti). Takodje, dostupan je PREGLED_SISTEMA.md fajl gde je detaljnije opisana namena i svrha analiziranog sistema, kao i opis svakog procesnog cvora predstavljenog u dijagramu. Granice poverljivosti sistema definisane su na dijagramu 2. nivoa.
+Bezbednosna analiza Enterprise sistema Caddie
+--------------------------------------------
 
-U folderu "Literatura" navedeni su radovi koji treba da budu pregledani u svrhu bezbednosne analize sistema.
+- Struktura
+
+U folderu "Dijagrami arhitekture sistema" dostupna su prva tri nivoa C4 dijagrama analiziranog enterprise sistema.
+Granice poverljivosti sistema definisane su na dijagramu 2. nivoa.
+
+U folderu "Enterprise sistem Caddie" nalazi se dokument "PREGLED_SISTEMA.md" u kome je dat tekstualan opis sistema.
+
+U folderu "Literatura" nalazi se dokument "Literatura.md" u kome su navedeni radovi koji treba da budu pregledani u svrhu bezbednosne analize sistema.
+
+--------------------------------------------
+- Članovi tima
+
+Ana Vulin E2 62/2023
+Sara Sinjeri E2 66/2023

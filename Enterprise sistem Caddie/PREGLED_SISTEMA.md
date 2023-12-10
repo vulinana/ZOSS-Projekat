@@ -75,7 +75,7 @@ Integracijom u Caddie sistem nudi mogucnost online placanja. U slucaju analizira
 
 Koristi se kao eksterni servis za konverziju valuta u sistemu. Komunikacija se obavlja preko Http protokola.
 
-- Redis
+- Redis [8]
 
 Eksterni servis koristen u Caddie sistemu za kesiranje podataka i cron jobs. Komunikacija se obavlja preko Redis protokola - RESP.
 
@@ -114,6 +114,7 @@ Reference
 5. https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication
 6. https://docs.getcensus.com/destinations/algolia
 7. https://stripe.com/docs/billing/subscriptions/overview?fbclid=IwAR3WVMMFBmTCUih4f4sEHtPWidxgawJUdmQY2XjaLk2kI7DcsLrMjAgQfTM
+8. https://redis.io/docs/
 
 
 
