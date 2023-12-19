@@ -1,6 +1,12 @@
 # AWS S3 eksterni servis
 
-Amazon Simple Storage Service je usluga za skladištenje podataka u oblaku. Organizuje se u jedinstvene jedinice nazvane buckets. Bucket ima jedinstveno ime unutar AWS regije. Svaki bucket ima objekte, a objekat ima jedinstveni kljuc unutar bucket-a. Kljuc je putanja do objekta unutar bucket-a kao i njegov jedinstveni identifikator. Objekat je osnovna jedinica podatka koja se cuva.
+Amazon Simple Storage Service je usluga za skladištenje podataka u oblaku. Organizuje se u jedinstvene jedinice nazvane buckets. Bucket ima jedinstveno ime unutar AWS regije. Svaki bucket ima objekte, a objekat ima jedinstveni ključ unutar bucket-a. Ključ objekta predstavlja njegovu putanju unutar bucket-a kao i njegov jedinstveni identifikator. Objekat je osnovna jedinica podatka koji se čuva.<br>
+Kao i svaki drugi servis tako je i AWS S3 podložan sigurnosnim pretnjama.
+1. Neovlašćeni pristup osetljivim podacima [P1] <br>
+Ključni resurs koji može biti ugrožen u okviru AWS S3 usluge su bucket-i sa svojim podacima. Napadač može da pregleda podatke unutar bucket-a i na taj način, ugrožava poverljivost informacija. Ovi podaci predstavljaju vredan resurs za napadača koji ih može iskoristiti u cilju zloupotrebe, iznude ili ucene gde napadač traži novac ili nešto drugo kako ih ne bi objavio ili zloupotrebio.
+2. Gubitak kontrole nad bucket-om [P2] <br>
+Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svojim podacima. Pored ugrožavanja poverljivosti informacija, direktno su ugroženi i integritet i dostupnost podataka smešteni unutar njega. Napadač ima mogućnost da pregleda, menja ili briše podatake, kao i da dodaje zlonamerni sadržaj i na taj način izvodi druge napade kao što je Phishing. Na ovaj način napadač može da nanese štetu organizaciji, zloupotrebi podatke, vrši ucene ili iznude finansijskih sredstava. 
+
 
 ## Napadi
 
@@ -10,8 +16,7 @@ Predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 buck
 
 #### Pretnje
 
-1. Gubitak osetljivih informacija
-2. Neovlašćeni pristup osetljivim podacima
+1. Neovlašćeni pristup osetljivim podacima [P1]
 
 #### Mitigacije
 
