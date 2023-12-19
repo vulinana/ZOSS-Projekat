@@ -10,6 +10,8 @@ Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svo
 
 ## Napadi
 
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/GlavniDeoSistema/AWS-S3/AWS-S3-attack-tree.drawio.png)
+
 ### Data Exfilitration
 
 Predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 bucket-ovima. Napadač pokušava dobiti pristup osetljivim podacima koje se nalaze u bucket-ovima, pa ih preneti ili zloupotrebiti.
