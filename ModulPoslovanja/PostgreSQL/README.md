@@ -14,6 +14,8 @@ U okviru ove pretnje ugroženi su baza podataka i server koji je odgovoran za ob
 Ostvarivanjem ove pretnje napadač ometa normalno poslovanje organizacije ili pojedinca onemogućavanjem pristupa bazi podataka što može dovesti do prekida rada aplikacija koje zavise od PostgreSQL-a.
 Motivi mogu biti različiti kao što su npr želja da se nanese šteta konkurenciji ili protest usled neslaganja sa pojedincem/organizacijom.
 
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/postgreSQL-attack-tree.png)
+
 ## Napadi
 
 ### Stored Procedure Abuse [N1]
