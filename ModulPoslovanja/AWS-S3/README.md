@@ -7,7 +7,7 @@ Ključni resurs koji može biti ugrožen u okviru AWS S3 usluge su bucket-i sa s
 2. Gubitak kontrole nad bucket-om [P2] <br>
 Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svojim podacima. Pored ugrožavanja poverljivosti informacija, direktno su ugroženi i integritet i dostupnost podataka smešteni unutar njega. Napadač ima mogućnost da pregleda, menja ili briše podatake, kao i da dodaje zlonamerni sadržaj i na taj način izvodi druge napade kao što je Phishing. Na ovaj način napadač može da nanese štetu organizaciji, zloupotrebi podatke, vrši ucene ili iznude finansijskih sredstava. 
 
-![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/AWS-S3-attack-tree.drawio.png)
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Dijagrami/AWS-S3-attack-tree.png)
 
 ## Napadi
 
