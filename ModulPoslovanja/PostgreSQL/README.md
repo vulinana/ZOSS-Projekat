@@ -5,14 +5,15 @@ To je sistem otvorenog koda što znači da korisnici imaju pristup izvornom kodu
 Poznat je i po svojoj proširivosti jer korisnici imaju mogućnost da kreiraju svoje tipove podataka, funkcije, operatore i jezike. 
 Podržava napredne SQL upite, čime omogućava kompleksno modelovanje podataka i efikasno izvršavanje upita, kao i mogućnost replikacije podataka kako bi se povećali dostupnost i skalabilnost. <br>
 Kao i svaki drugi softver tako je i PostgreSQL podložan sigurnosnim pretnjama <br>
-1. Neovlašćena manipulacija podacima [P1]<br>
-Ključni resurs koji je ugrožen u okviru PostgreSQL-a jesu sami podaci koji se u njemu skladište.
-Napadač ima mogućnost manipulacije podacima i na taj način ugrožava njihovu poverljivost, integritet i dostupnost.
-Na ovaj način može da nanese štetu pojedincu ili organizaciji radi sabotaže, da dođe do osetljivih podataka koje bi mogao da zloubotrebi, da vrši ucene ili iznude novca. <br>
-2. Nedostupnost sistema [P2]<br>
-U okviru ove pretnje ugroženi su baza podataka i server koji je odgovoran za obradu upita, transakcija i pružanje usluga korisnicima. Server je preopterećen, smanjena je dostupnost i onemogućeno je normalno funkcionisanje sistema.
-Ostvarivanjem ove pretnje napadač ometa normalno poslovanje organizacije ili pojedinca onemogućavanjem pristupa bazi podataka što može dovesti do prekida rada aplikacija koje zavise od PostgreSQL-a.
-Motivi mogu biti različiti kao što su npr želja da se nanese šteta konkurenciji ili protest usled neslaganja sa pojedincem/organizacijom.
+1. Neovlašćena manipulacija podacima i operacijama [P1]<br>
+Ključni resurs ugrožen u okviru PostgreSQL-a su podaci koji se u njemu skladište, kao i operacije nad samom bazom podataka.
+Napadač ima mogućnost manipulacije podacima, čime ugrožava njihovu poverljivost, integritet i dostupnost.
+Osim toga, može izvršavati opasne operacije nad samom bazom podataka, uključujući brisanje tabela ili promenu strukture podataka, što dodatno kompromituje integritet i operativnost sistema.
+Na ovaj način može da nanese štetu pojedincu ili organizaciji sabotažom, špijunažom, da dođe do osetljivih podataka koje bi mogao da zloubotrebi, da vrši ucene ili iznude novca. <br>
+2. Gubitak podataka [P2]<br>
+U okviru ove pretnje ugroženi su sami podaci u bazi podataka. Deo podataka ili čak svi podaci postaju nedostupni, pa aplikacije koje zavise od njih mogu postati nefunkcionalne.
+Napadač podatke čini nedostupnim kako bi vršio iznudu ili ucenu pojedinca/organizacije. Ako bi ukradeni podaci postali javni to može oštetiti reputaciju žrtve.
+Klijenti, partneri i korisnici mogu izgubiti poverenje u organizaciju zbog nesposobnosti da zaštiti svoje podatke
 
 ![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/postgreSQL-attack-tree.png)
 
@@ -33,8 +34,8 @@ Jednom kada napadač ima pristup nalogu koji ima odgovarajuće dozvole za rad sa
 Postavlja se pitanje zašto napadači koriste uskladištene procedure za napade ako već imaju pristup nalogu sa visokim nivoom privilegija, kao što je System Administrator.
 Poenta napada na stored procedure leži u tome što napadaču omogućava slobodnije kretanje i izvršavanje napada unutar same baze podataka i povezanih aplikacija, 
 umesto da se ograniči na osnovne funkcionalnosti koje već ima kao administrator sistema. 
-Uskladištene procedure mogu omogućiti napadaču da izvršava SQL upite i izaziva štetne efekte unutar same baze podataka. Ovaj napad se može koristiti u kombinaciji sa drugim napadima kao što je SQL Injection.
-Na ovaj način se ostvaruje pretnja Neovlašćena manipulacija podacima [P1].
+Uskladištene procedure mogu omogućiti napadaču da izvršava SQL upite, manipuliše nad šemama baze podataka i izaziva tako izaziva štetne efekte. Ovaj napad se može koristiti u kombinaciji sa drugim napadima kao što je SQL Injection.
+Na ovaj način se ostvaruje pretnja Neovlašćena manipulacija podacima i operacijama [P1].
 
 #### Mitigacije
 
@@ -71,8 +72,8 @@ Malver usmeren na PostgreSQL može se koristiti za krađu akreditacija, praćenj
 5. Social Engineering <br>
 Napadač može pokušati izvršiti napad na privilegije putem društvenog inženjeringa, gde pokušava manipulisati korisnicima ili administratorima baze podataka kako bi otkrili akreditacije ili izvršili radnje koje dovode do povećanja privilegija. To može uključivati phishing napade, lažne poruke ili druge oblike manipulacije.
 
-Nakon što napadač uspe u privilegiranom eskalaciji, posledice mogu biti ozbiljne, jer mu mogu omogućiti neovlašćeni pregled podataka, izmenu ili brisanje podataka, dodavanje lažnih podataka. 
-Na ovaj način napad Privilege Escalation ostvaruje pretnju 'Neovlašćena manipulacija podacima' [P1].
+Nakon što napadač uspe u privilegiranom eskalaciji, posledice mogu biti ozbiljne, jer mu mogu omogućiti neovlašćeni pregled podataka, izmenu ili brisanje podataka, dodavanje lažnih podataka, promene šeme baze podataka, brisanje tabela. 
+Na ovaj način napad Privilege Escalation ostvaruje pretnju 'Neovlašćena manipulacija podacima i operacijama' [P1].
 
 ### Mitigacije
 
@@ -86,16 +87,38 @@ Dodatno:
 Bitno je pratiti i primenjivati bezbednosne zakrpe i ispravke sistema kako bi se smanjio rizik od eksploatacije poznatih ranjivosti.
 Smanjenje šansi da napadač pronađe iskorišćivu ranjivost najbolji je način da se zaustavi svaka vrsta sajber napada. 
 <br><br>
-2. Obuka zaposlenih da prepoznaju Social Engineering [M6]<br>
+2. Obuka zaposlenih o bezbednosti [M6]<br>
 Ljudi su obično najslabija karika u sigurnosti svake organizacije.
 Oni mogu nesvesno doprineti napadu eskalacije koristeći slabe lozinke, klikćući na zlonamerne linkove ili priloge, i ignorišući upozorenja u vezi sa opasnim veb sajtovima.
 Redovne obuke o bezbednosti osiguravaju da se nove pretnje mogu objasniti, kao i da u svesti zaposlenih održavaju bezbednosne politike.
 Potrebno je naglasiti opasnosti i rizike deljenja naloga i akreditacija.
 
+## Ransomware Attack [N3]
 
+Ransomware napad je vrsta cyber napada tokom kog napadač inficira sistem zlonamernim softverom koji šifrira podatke ili blokira pristup korisnicima do određenog vremena,
+uz zahtev za plaćanje otkupnine kako bi žrtva ponovo dobila pristup svojim podacima. Iako žrtva plati otkupninu, i dalje postoji mogućnost da nikada ne dobije svoje podatke, pa čak i da budu javno objavljeni.
 
+Napadač prvo pokušava dobiti pristup sistemu koristeći se različitim metodama kao što su brute force napadi, eksploatacija ranjivosti ili phishing. Kada dobije pristup sledi prikupljanje informacija o PostgreSql bazi, tabelama i korisnicima, a zatim enkriptuje podatke i na taj način ih čini nečitljivim bez odgovarajućeg ključa za dekripciju. Kako bi povećao pritisak na žrtvu, napadač može podatke preneti na lokacije koje on kontroliše i obrisati ih iz sistema. Nakon toga ostavlja poruku, koja sadrži obaveštenje o napadu i zahtev za plaćanje određene sume novca. Kako bi povećao pritisak, napadač može zapretiti da će javno objaviti ukradene podatke ukoliko otkupnina ne bude plaćena u određenom roku. Na ovaj način Ransomware Attack ostvaruje pretnju 'Gubitak podataka' [P2].
+
+### Mitigacije
+
+1. Jaka autentifikacija [M1] <br>
+S obzirom da Ransomware napadi često počinju krađom kredencijala, veoma je bitno koristiti nepredvidive lozinke. Takođe dvofaktorska autentifikacija ili drugi oblici jake autentifikacije znčajno mogu otežati napadačima dobijanje pristupa čak i ko dođe do korisničkih imena i lozinki. <br><br>
+2. Sigurnosne konfiguracije [M2] <br>
+Bitna stvar je da se pažljivo upravlja privilegijama koje korisnika i da se broj privilegovanih korisnika smanji na minimum kako bi se ograničio pristup podacima i operacijama. <br><br>
+3. Evidencija praćenje i upozoravanje [M4] <br>
+Postavljanjem sistema za detekciju neobičnih događaja može pomoći brzoj identifikaciji sumnjivih događaja <br><br>
+4. Redovno ažuriranje sistema [M5] <br>
+Neophodno je redovno pratiti i primenjivati redovna ažuriranja sistema, jer nove verzije često ispravljaju ranjivosti i poboljšavaju sigurnost sistema <br><br>
+5. Obuka zaposlenih o bezbednosti [M6] <br>
+Obuka zaposlenih o bezbednosnim praksama takođe može biti značajan vid prevencije Ransomware napada, pogotovo jer su phishing napadi često njegova početna tačka. <br><br>
+7. Redovno pravljenje rezervnih kopija podataka (backup) [M7] <br>
+Redovno pravljenje rezerbnih kopija može pomoći brzom oporavku od Ransomware napada. Ukoliko žrtvi nije bitno da li će ovi podaci biti objavljeni, rezervna kopija može u potpunosti da ga spasi.
  
 ## Reference 
-1. https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf
-2. https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
-3. https://www.techtarget.com/searchsecurity/tip/6-ways-to-prevent-privilege-escalation-attacks
+1. https://kinsta.com/knowledgebase/what-is-postgresql/
+2. https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf
+3. https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
+4. https://www.techtarget.com/searchsecurity/tip/6-ways-to-prevent-privilege-escalation-attacks
+5. https://www.imperva.com/blog/postgresql-database-ransomware-analysis/
+6. https://www.postgresql.fastware.com/postgresql-insider-sec-ransom
