@@ -15,7 +15,7 @@ U okviru ove pretnje ugroženi su sami podaci u bazi podataka. Deo podataka ili 
 Napadač podatke čini nedostupnim kako bi vršio iznudu ili ucenu pojedinca/organizacije. Ako bi ukradeni podaci postali javni to može oštetiti reputaciju žrtve.
 Klijenti, partneri i korisnici mogu izgubiti poverenje u organizaciju zbog nesposobnosti da zaštiti svoje podatke
 
-![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/PostgreSQL-attack-tree.png)
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/postgres-attack-tree.png)
 
 ## Napadi
 
