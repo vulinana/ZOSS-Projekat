@@ -72,7 +72,7 @@ Malver usmeren na PostgreSQL može se koristiti za krađu akreditacija, praćenj
 5. Social Engineering <br>
 Napadač može pokušati izvršiti napad na privilegije putem društvenog inženjeringa, gde pokušava manipulisati korisnicima ili administratorima baze podataka kako bi otkrili akreditacije ili izvršili radnje koje dovode do povećanja privilegija. To može uključivati phishing napade, lažne poruke ili druge oblike manipulacije.
 
-Nakon što napadač uspe u privilegiranom eskalaciji, posledice mogu biti ozbiljne, jer mu mogu omogućiti neovlašćeni pregled podataka, izmenu ili brisanje podataka, dodavanje lažnih podataka, promene šeme baze podataka, brisanje tabela. 
+Nakon što napadač uspe u eskalaciji privilegija, posledice mogu biti ozbiljne, jer mu mogu omogućiti neovlašćeni pregled podataka, izmenu ili brisanje podataka, dodavanje lažnih podataka, promene šeme baze podataka, brisanje tabela. 
 Na ovaj način napad Privilege Escalation ostvaruje pretnju 'Neovlašćena manipulacija podacima i operacijama' [P1].
 
 ### Mitigacije
@@ -90,7 +90,7 @@ Smanjenje šansi da napadač pronađe iskorišćivu ranjivost najbolji je način
 2. Obuka zaposlenih o bezbednosti [M6]<br>
 Ljudi su obično najslabija karika u sigurnosti svake organizacije.
 Oni mogu nesvesno doprineti napadu eskalacije koristeći slabe lozinke, klikćući na zlonamerne linkove ili priloge, i ignorišući upozorenja u vezi sa opasnim veb sajtovima.
-Redovne obuke o bezbednosti osiguravaju da se nove pretnje mogu objasniti, kao i da u svesti zaposlenih održavaju bezbednosne politike.
+Redovne obuke o bezbednosti osiguravaju da se nove pretnje mogu objasniti, kao i da se u svesti zaposlenih održavaju bezbednosne politike.
 Potrebno je naglasiti opasnosti i rizike deljenja naloga i akreditacija.
 
 ## Ransomware Attack [N3]
@@ -105,7 +105,7 @@ Napadač prvo pokušava dobiti pristup sistemu koristeći se različitim metodam
 1. Jaka autentifikacija [M1] <br>
 S obzirom da Ransomware napadi često počinju krađom kredencijala, veoma je bitno koristiti nepredvidive lozinke. Takođe dvofaktorska autentifikacija ili drugi oblici jake autentifikacije znčajno mogu otežati napadačima dobijanje pristupa čak i ko dođe do korisničkih imena i lozinki. <br><br>
 2. Sigurnosne konfiguracije [M2] <br>
-Bitna stvar je da se pažljivo upravlja privilegijama koje korisnika i da se broj privilegovanih korisnika smanji na minimum kako bi se ograničio pristup podacima i operacijama. <br><br>
+Bitna stvar je da se pažljivo upravlja privilegijama korisnika i da se broj privilegovanih korisnika smanji na minimum kako bi se ograničio pristup podacima i operacijama. <br><br>
 3. Evidencija praćenje i upozoravanje [M4] <br>
 Postavljanjem sistema za detekciju neobičnih događaja može pomoći brzoj identifikaciji sumnjivih događaja <br><br>
 4. Redovno ažuriranje sistema [M5] <br>
