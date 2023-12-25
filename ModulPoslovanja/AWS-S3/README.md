@@ -7,15 +7,15 @@ Ključni resurs koji može biti ugrožen u okviru AWS S3 usluge su bucket-i sa s
 2. Gubitak kontrole nad bucket-om [P2] <br>
 Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svojim podacima. Pored ugrožavanja poverljivosti informacija, direktno su ugroženi i integritet i dostupnost podataka smešteni unutar njega. Napadač ima mogućnost da pregleda, menja ili briše podatake, kao i da dodaje zlonamerni sadržaj i na taj način izvodi druge napade kao što je Phishing. Na ovaj način napadač može da nanese štetu organizaciji, zloupotrebi podatke, vrši ucene ili iznude finansijskih sredstava. 
 
-![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Dijagrami/AWS-S3-attack-tree.png)
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Dijagrami/awss3-attack-tree.png)
 
 ## Napadi
 
-### Data Exfiltration N1
+### Data Exfiltration [N1]
 
 Data exiltration, poznat kao i data extrustion, predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 bucket-ovima od strane napadača. Napadač pokušava dobiti pristup osetljivim podacima koje se nalaze u bucket-ovima, pa ih preneti ili zloupotrebiti.
 
-Napadač prvo identifikuje AWS S3 bucket koji će mu biti cilj napada. Ovaj korak uključuje istraživanje dostupnih bucket-ova i procenu da li su podaci unutar njih vredni. Nakon toga sledi detaljna analiza bezbednosnih mera kako bi se identifikovale ranjivosti. Kradjom autentifikacionih podataka, manipulacijom pravilima pristupa ili korišćenjem ranjivosti napadač pokušava dobiti neovlašćeni pristup bucket-u. Nakon što je ostvario pristup podacima, napadač identifikuje osetljive podatke, a zatim ih prenosi na neku drugu lokaciju pod svojom kontrolom. Nakon izvršavanja napada, napadač može pokušati da sakrije tragove kako bi sprečio da bude otkriven. To će učiniti brisanjem logova i evidencije aktivnosti. Nakon svih ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
+Napadač prvo identifikuje AWS S3 bucket koji će mu biti cilj napada. Ovaj korak uključuje istraživanje dostupnih bucket-ova i procenu da li su podaci unutar njih vredni. Nakon toga sledi detaljna analiza bezbednosnih mera kako bi se identifikovale ranjivosti. Kradjom autentifikacionih podataka, manipulacijom pravilima pristupa ili korišćenjem ranjivosti napadač pokušava dobiti neovlašćeni pristup bucket-u. Nakon što je ostvario pristup podacima, napadač identifikuje osetljive podatke, a zatim ih prenosi na neku drugu lokaciju pod svojom kontrolom. Nakon izvršavanja napada, napadač može pokušati da sakrije tragove kako bi sprečio identifikaciju i praćenje napada. To će učiniti brisanjem logova i evidencije aktivnosti. Nakon svih ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
 
 #### Mitigacije
 
@@ -24,11 +24,16 @@ Kada je konfiguracija pristupa u pitanju, potrebno je odrediti ko ima pristup ko
 **IAM politike** - određuju koje su radnje dozvoljene ili odbijene na AWS uslugama/resursima za određenog korisnika. IAM politike možemo da dodelimo          specifičnom korisniku, ulozi ili grupi.<br><br>
 **Bucket-Level politike** - određuju koje su radnje dozvoljene ili nisu nad specifičnim bucket-om za određene korisnike. <br><br>
 **S3 Bucket ACL** - predstavlja stari način upravljanja pristupom bucket-ima. AWS preporučuje korišćenje IAM ili Bucket-Level politika, ali još uvek postoje slučajevi u kojima ACL-ovi daju veću fleksibilnost od politika. To je jedan od razloga zašto još uvek nisu zastareli niti će biti uskoro. Najznačajnija prednost jeste što se mogu dodeljivati i bucket-ima ali i samim objektima, što nije slučaj sa politikama. Znači da postoji velika fleksibilnost nad resursima jer neki objekti mogu biti javni u privatnom bucket-u kao i obrnuto. <br><br>
-Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama za čitanje podataka (READ). Najbolja praksa, bez obzira koje se od ova tri podešavanja koristi, predstavlja primenu dozvola sa najmanjim privilegijama, što znači da korisnici dobijaju samo dozvole koje su im neophodne za obavljanje sopstvenih zadataka. <br><br>
+Najbolja praksa, bez obzira koje se od ova tri podešavanja koristi, predstavlja primenu dozvola sa najmanjim privilegijama, što znači da korisnici dobijaju samo dozvole koje su im neophodne za obavljanje sopstvenih zadataka. Time se smanjuje površina napada.<br>
+Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama za čitanje podataka (READ)
+<br><br>
 3. Enkripcija podataka [M2] <br>
 Enkripcijom podaci postaju beskorisni napadaču jer ne može da ih pročita. Postoji nekoliko načina kako se može odraditi enkripcija kada je u pitanju AWS S3. <br><br>
 **Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i pomoću ključa koji obezbeđuje korisnik (SSE-C). <br><br>
-**Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. 
+**Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. <br><br>
+4. Praćenje i detekcija aktivnosti [M5] <br>
+Ukoliko se napad desi veoma je bitno da na vreme bude identifikovan. To se može uraditi korišćenjem alata kao što je AWS CloudTrail koji se koristi za praćenje svih aktivnosti na AWS-u. CloudTrail beleži događaje i aktivnosti vezane za AWS nalog i smešta podatke u CloudTrail log grupe, gde se lako mogu pregledati i analizirati. Iz podataka se može zaključiti zahtev koji je upućen, IP adresa sa koje je zahtev podnet, ko je i kada podneo zahtev, kao i drugi dodatni detalji o samom zahtevu. <br>
+Za zaštitu od Data Exfiltration napada bitno je što CloudTrail može pratiti svaki zahtev za prenos podataka između S3 bucket-a i drugih AWS resursa. Sumnjive aktivnosti koje ukazuju na velike prenose podataka ili nepravilne upite mogu biti detektovane i istražene. Naravno, ovo je moguće pod uslovom da napadač ne obriše logove kako bi sakrio tragove napada. 
 
 ### Bucket Enumeration <a id="N2">[N2]</a>
 
@@ -46,6 +51,9 @@ Upotrebom neuobičajenih i teško predvidivih imena može se povećati bezbednos
 
 3. Enkripcija podataka [M2]<br>
 Nakon što su pronadjeni javni bucket-i, napadač može da vidi podatke koji se nalaze u njima te ih je neophodno enkriptovati korišćenjem tehnika koje su opisane u prethodnom napadu.
+
+4. Praćenje i detekcija aktivnosti [M5] <br>
+CloudTrail beleži svaki zahtev za pristup bucket-ovima, što omogućava identifikaciju slučajeva gde napadači pokušavaju identifikovati dostupne bucket-ove. Nakon što se napad uoči, ažuriranje bezbednosnih politika i brza reakcija mogu ograničiti potencijalne pretnje.
  
 ### Bucket takeover [N3]
 
@@ -60,16 +68,18 @@ Kao i u pretnodna dva napada, konfiguracija pristupa igra ključnu ulogu kada je
 2. Multifaktorska autentifikacija (MFA) [M4] <br>
 Multifaktorska autentifikacija (MFA) je snažna bezbednosna praksa koja dodaje dodatni sloj autentifikacije kako bi se zaštitili korisnički nalozi i resursi, uključujući Amazon S3 bucket-ove. MFA za S3 resurse može se primeniti kako bi se otežao ili onemogućio neovlašćeni pristup, posebno nakon napada kao što je Bucket Takeover. Npr MFA se može postaviti pre nego što se korisniku dozvoli da menja neki resurs ili da ga briše. <br><br>
 3. Enkripcija podataka [M2]<br>
-Ukoliko je kontrola nad bucket-om već izgubljena dobro bi bilo da su podaci šifrovani, korišćenjem tehnika za šifrovanje koje su prethodno opisane, kako makar ne bi mogao da ih zloupotrebi.
-   
+Ukoliko je kontrola nad bucket-om već izgubljena dobro bi bilo da su podaci šifrovani, korišćenjem tehnika za šifrovanje koje su prethodno opisane, kako makar ne bi mogao da ih zloupotrebi. <br><br>
+4. Praćenje i detekcija aktivnosti [M5] <br>
+CloudTrail omogućava praćenje svih događaja i aktivnosti unutar AWS infrastrukture, uključujući promene u konfiguraciji S3 bucket-a. Bilo kakve nepravilnosti ili promene u privilegijama i pravilima pristupa mogu biti brzo identifikovane.
 
 ### Reference
-1. https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-aws-semicon-workloads/prevent-unauthorized-access.html
-2. https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/  
-3. https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html  
-4. https://risk3sixty.com/2022/10/24/s3-buckets/
-5. https://ieeexplore.ieee.org/document/9133399?denied
-6. https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/
+1. https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
+2. https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-aws-semicon-workloads/prevent-unauthorized-access.html
+3. https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/  
+4. https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html  
+5. https://risk3sixty.com/2022/10/24/s3-buckets/
+6. https://ieeexplore.ieee.org/document/9133399?denied
+7. https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/
    
 
 
