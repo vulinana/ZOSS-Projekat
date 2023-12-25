@@ -13,9 +13,9 @@ Granice poverljivosti sistema definisane su na dijagramu 2. nivoa.
 1. [ModulIntegracije/](ModulIntegracije/)
 2. [ModulIntegraicje/](ModulIntegracije/)
 
-[ModulPoslovanja](ModulPoslovanja/) - Modul poslovanja obuhvata Core aplikaciju zajedno sa svojom bazom podataka i eksternim servisima.
-1. [ModulPoslovanja/AWS-S3](ModulPoslovanja/AWS-S3) - opis pretnji na AWS-S3, napada koji ostvaruju datu pretnju i mitigacija koje sprečavaju napade.
-2. [ModulPoslovanja/PostgreSQL](ModulPoslovanja/PostgreSQL) - opis pretnji na PostgreSQL, napada koji ostvaruju datu pretnju i mitigacija koje sprečavaju napade.
+[ModulPoslovanja](ModulPoslovanja/) - Modul poslovanja obuhvata Core aplikaciju zajedno sa svojim sistemom za upravljanje bazama podataka (PostgreSQL) i eksternim servisima.
+1. [ModulPoslovanja/AWS-S3](ModulPoslovanja/AWS-S3) - opis pretnji na AWS-S3, napada koji ostvaruju datu pretnju i mitigacija koje sprečavaju napade i umanjuju njihove posledice.
+2. [ModulPoslovanja/PostgreSQL](ModulPoslovanja/PostgreSQL) - opis pretnji na PostgreSQL, napada koji ostvaruju datu pretnju i mitigacija koje sprečavaju napade i umanjuju njihove posledice.
 
 ## Članovi tima
 
