@@ -1,6 +1,6 @@
 # MongoDB baza podataka
 
-MongoDB je dokument orijentisana baza podataka poznata po performantnosti, fleksibilnosti i skalabilnosti. Podaci se skladiste u JSON formatu. Svaki podatak predstavlja dokument, dok skup dokumenata cini kolekciju. 
+MongoDB je dokument orijentisana baza podataka poznata po performantnosti, fleksibilnosti i skalabilnosti. Podaci se skladiste u BSON formatu. Svaki podatak predstavlja dokument, dok skup dokumenata cini kolekciju. 
 MongoDB je dizajnirana da omoguci skladisnjenje velikog broja podataka i izvrsavanje kompleksnih upita. 
 
 Neke od postojecih pretnji vezanih za MongoDB su sledece:
