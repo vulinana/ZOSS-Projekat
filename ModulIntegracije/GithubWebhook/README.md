@@ -120,3 +120,4 @@ Nakon sto je zahtev uspesno presretnut od strane napadaca, on je u stanju da isk
 2. https://blog.korelogic.com/blog/2014/06/26/repository_tampering
 3. https://hookdeck.com/webhooks/guides/webhook-security-vulnerabilities-guide
 4. https://ngrok.com/blog-post/get-webhooks-secure-it-depends-a-field-guide-to-webhook-security
+5. https://www.linkedin.com/pulse/attack-methods-webhook-calls-vartul-goyal/
