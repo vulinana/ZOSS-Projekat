@@ -119,3 +119,4 @@ Nakon sto je zahtev uspesno presretnut od strane napadaca, on je u stanju da isk
 1. https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
 2. https://blog.korelogic.com/blog/2014/06/26/repository_tampering
 3. https://hookdeck.com/webhooks/guides/webhook-security-vulnerabilities-guide
+4. https://ngrok.com/blog-post/get-webhooks-secure-it-depends-a-field-guide-to-webhook-security
