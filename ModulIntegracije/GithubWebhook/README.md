@@ -87,7 +87,7 @@ Maliciozni kod ubacen prvo u repozitorijum, putem webhook zahteva zavrsava i u s
 
 Replay Tampering u slucaju sistema integrisanog sa GitHub-om putem webhook-ova zasniva se na ponovnom ili odlozenom slanju validnih zahteva. Obzirom da se analizirani sistem oslanja na podatke dobavljene od GitHub za statisticku obradu, ponovljeni zahtevi direktno se odrzavaju na statistiku koja nece prikazivati tacne podatke korisnicima. 
 
-Napadac zapocinje napad presretanjem validnog webhook zahteva koji GitHub salje sistemu. Ovo je moguce ostvariti u slucaju da podaci nisu enkriptovani, odnosno da se ne koristi HTTPS za prenos podataka. Presretnut zahtev sadrzi citav payload (kao sto su informacije o komitima, push ili pr dogadjajima) zajedno sa svim header-ima, od kojih je glavni X-Hub-Signature header koji sadrzi potpis payload-a neophodan za verifikaciju zahteva. 
+Napadac zapocinje napad presretanjem validnog webhook zahteva koji GitHub salje sistemu. Presretnut zahtev sadrzi citav payload (kao sto su informacije o komitima, push ili pr dogadjajima) zajedno sa svim header-ima, od kojih je glavni X-Hub-Signature header koji sadrzi potpis payload-a neophodan za verifikaciju zahteva. 
 
 Nakon sto je zahtev uspesno presretnut od strane napadaca, on je u stanju da iskoristi taj isti zahtev neogranicen broj puta, sto moze izazvati nezeljeno ponasanje i prikaz netacnih informacija u integrisanom sistemu ukoliko nisu implementirani odgovarajuci mehanizmi zastite protiv navedenog napada. 
 
