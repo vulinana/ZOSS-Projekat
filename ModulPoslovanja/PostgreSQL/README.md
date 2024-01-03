@@ -1,5 +1,5 @@
 # PostgreSQL
-PostgreSQL, poznat i kao Postgres, predstavlja besplatan sistem za upravljanje relacionim bazama podataka koji pruža efikasno i pouzdano skladište podataka. 
+PostgreSQL [[1]](#reference), poznat i kao Postgres, predstavlja besplatan sistem za upravljanje relacionim bazama podataka koji pruža efikasno i pouzdano skladište podataka. 
 Za PostgreSQL su karakteristične transakcije (sa svojim svojstvima atomičnosti, konzistentnosti, izolacije i izdržljivosti - ACID), automatski ažurirani prikazi, trigeri, strani ključevi i uskladištene procedure.
 To je sistem otvorenog koda što znači da korisnici imaju pristup izvornom kodu i mogu da prilagođavaju softver sopstvenim potrebama. 
 Poznat je i po svojoj proširivosti jer korisnici imaju mogućnost da kreiraju svoje tipove podataka, funkcije, operatore i jezike. 
@@ -22,20 +22,30 @@ Klijenti, partneri i korisnici mogu izgubiti poverenje u organizaciju zbog nespo
 ### Stored Procedure Abuse [N1]
 
 U PostgreSQL-u mogu postojati uskladištene procedure koje su napisane pomoću PostgreSQL proceduralnog jezika zvanog PL/PgSQL.
-One često sadrze kompleksne logicke operacije izvršavane u samoj bazi podataka.
+One često sadrže kompleksne logičke operacije izvršavane u samoj bazi podataka.
 Uskladištene procedure omogućavaju ponovnu upotrebu koda (skup naredbi koji se često koriste se može grupisati u proceduru), optimizovati performanse (smanjuje se potreba za slanjem više upita iz aplikacije ka serveru).
-Stored Procedure Abuse predstavlja napad koji se fokusira na zloupotrebu tih procedura. 
+Stored Procedure Abuse [[2]](#reference) predstavlja napad koji se fokusira na zloupotrebu tih procedura. 
 
 Prvi korak u ovom napadu jeste dobijanje pristupa nalozima ili aplikacijama koji imaju odgovarajuće dozvole za interakciju sa odgovarajućim procedurama.
 Uobičajeni SQL serverski nalog koji je napadaču koristan je unapred izgrađeni administratorski nalog koji se podrazumevano zove System Administrator, ali svakako to može biti i bilo koji drugi koji ima odgovarajuće dozvole.
 Jedna od najčešćih metoda za dobijanje pristupa administratorskom nalogu jeste pogađanje lozinke ili napad rečnikom. Administratori prečesto ne uspevaju da konfigurišu naloge sa jakim lozinkama.
 Jednom kada napadač ima pristup nalogu koji ima odgovarajuće dozvole za rad sa procedurama on može da ih i iskoristi u svrhu napada. 
-
 Postavlja se pitanje zašto napadači koriste uskladištene procedure za napade ako već imaju pristup nalogu sa visokim nivoom privilegija, kao što je System Administrator.
 Poenta napada na stored procedure leži u tome što napadaču omogućava slobodnije kretanje i izvršavanje napada unutar same baze podataka i povezanih aplikacija, 
 umesto da se ograniči na osnovne funkcionalnosti koje već ima kao administrator sistema. 
-Uskladištene procedure mogu omogućiti napadaču da izvršava SQL upite, manipuliše nad šemama baze podataka i izaziva tako izaziva štetne efekte. Ovaj napad se može koristiti u kombinaciji sa drugim napadima kao što je SQL Injection.
+Uskladištene procedure mogu omogućiti napadaču da izvršava SQL upite, manipuliše nad šemama baze podataka i tako izaziva štetne efekte. 
 Na ovaj način se ostvaruje pretnja Neovlašćena manipulacija podacima i operacijama [P1].
+
+Jedan od najčešćih scenarija napada jeste korišćenje uskladištenih procedura za dodavanje korisničkih naloga. Slika 1.1 prikazuje napadača koji se povezuje na SQL server koristeći sqlcmd alat i autentifikuje se validnim pristupnim podacima. Nakon uspešne konekcije, napadač koristi xp_cmdshell uskladištenu proceduru da doda novi korisnički nalog na lokalni sistem <br><br>
+![Slika 1.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/adding-new-account-with-stored-procedure.PNG "Slika 1.1") <br> Slika 1.1<br>
+
+U nekim slučajevima napadači mogu razmotriti dodavanje dodatnog naloga kako bi sačuvali pristup u slučaju promene lozinke ili onemogućavanja naloga koji se koristi za pristup od strane napadača. Adminitratori baze podataka možda neće ni primetiti novi nalog ako nije omogućena provera za kreiranje naloga, ili ako nema praćenja i obaveštavanja za ovakvu vrstu aktivnosti. Slika 1.2 prikazuje napadača koji se povezuje sa SQL Serverom i koristi sp_addlogin uskladištenu proceduru putem sqlcmd alata kako bi kreirao novi nalog. Nakon što napadač doda novi nalog na SQL Server, eskalira njegove privilegije pozivanjem sp_addsrvrolemember uskladištene procedure. Ova procedura dodaje novo kreirani nalog u sysadmin fiksnu serversku ulogu, dodeljujući mu isti nivo pristupa kao i podrazumevani sa nalog. <br><br>
+![Slika 1.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/new-sa-account.PNG "Slika 1.2") <br> Slika 1.2<br>
+
+Iako prethodni primeri zahtevaju da napadač ima pristup nalogu sa visokim privilegijama, uskladištene procedure se takođe mogu zloupotrebiti u kombinaciji sa SQL Injection-om. Slično kao što je već opisano koristi se procedura xp_cmdshell za dodavanje novog korisnika, medjutim ovog puta napadač izvršava naredbu putem Web forme. <br><br>
+    ```
+  '; exec master..xp_cmdshell 'net user attacker P@ssw0rd /add'--
+    ``` 
 
 #### Mitigacije
 
@@ -46,8 +56,49 @@ Potreba za jakom autentifikacijom je važna bez obzira na tip naloga, ali je dup
 Da bi se postigla dodatna zaštita potrebno je smanjiti površinu dobijanja pristupa nalogu. To se može postići eliminisanjem nepotrebnih resursa kao što su aplikacije koje nisu neophodne za rad SQL servera,
 preimenovanjem, onemogućavanjem i/ili brisanjem nepotrebnih naloga. Neophodno je ograničiti privilegije korisničkim nalozima samo na ono što im je potrebno za obavljanje funkcija.<br><br>
 3. Uklanjanje nepotrebnih uskladištenih procedura<br>
-Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. Ukoliko su one ipak u nekim okolnostima neophodne, ali nije potrebno da uvek budu aktivne, treba ih onemogućiti.<br><br>
-4. Evidencija, praćenje i upozoravanje<br>
+Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. Ukoliko su one ipak u nekim okolnostima neophodne, ali nije potrebno da uvek budu aktivne, treba ih onemogućiti. <br>
+Slika 1.3 pruža primer administratora koji se povezuje sa SQL Server-om i pokušava iskoristiti funkcionalnost produžene uskladištene procedure xp_cmdshell. Početna greška ukazuje da je tražena uskladištena procedura onemogućena i da administrator nije u mogućnosti uspešno završiti zahtevanu komandu. <br><br>
+   ![Slika 1.3](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/disabled-procedure.PNG "Slika 1.2") <br> Slika 1.3<br>
+<br> Međutim, ako uskladištena procedura nije potpuno uklonjena, administrator može ponovo omogućiti proceduru uz nekoliko jednostavnih komandi (pod pretpostavkom da administrator ima odgovarajuće dozvole). Procedura skladišta baze podataka "sp_configure" omogućava konfiguraciju mnogih opcija globalno na SQL Server instanci. Korišćenje "sp_configure" za ponovno omogućavanje uskladištene procedure omogućiće administratoru da nastavi sa zadatkom. <br>
+    ```
+    -- Omogući napredne opcije
+    EXEC sp_configure 'show advanced options', 1
+    GO
+    -- Primeni promenu konfiguracije
+    RECONFIGURE
+    GO
+    -- Omogući xp_cmdshell
+    EXEC sp_configure 'xp_cmdshell', 1
+    GO
+    -- Primeni promenu konfiguracije
+    RECONFIGURE
+    GO
+    ```
+4. Parametrizovani upiti<br>
+Kada je reč o zloupotrebi uskladištenih procedura u kombinaciji sa SQL injection-om, bitno je koristiti parametrizovane upite u aplikaciji, kako bi se izbeglo direktno umetanje korisničkih podataka u upite. 
+U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje Node.js aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
+Ovaj alat pruža mogućnost korišćenja Prisma Client [[3]](#reference) koji automatski generiše parametrizovane upite, koristeći parametre umesto direktnog umetanja vrednosti u upit. Ovim se efikasno sprečavaju potencijalni SQL injection napadi. 
+   ```
+    const prisma = new PrismaClient({})
+    const result = await prisma.user.findUnique({
+      where: {
+         email: 'alice@prisma.io',
+      },
+    })
+   ```
+    Međutim Prisma Client omogućava i slanje sirovih upita (raw queries) [[4]](#reference) ka bazi podataka, što može biti korisno u određenim situacijama, kao što su zahtevi za izuzetno oprimizovanim upitima ili kada je potrebma podrška za funkcionalnosti koje Prisma Client možda još uvek ne podržava. Upotreba sirovih upita nosi određene rizike pogotovo u vezi sa SQL Injection napadima. Kada se koriste "$queryRaw" i "$executeRaw" metode, unos korisnika se tretira kao parametar u SQL upitu, što znači da će Prisma automatski koristiti prepared statement kako bi se izbeglo dirktno umetanje vrednosti. To pruža određeni nivo zaštite od SQL Injection napada jer se vrednosti tretiraju kao podaci, a ne kao deo samog SQL koda.
+   ```
+    const email = 'emelie@prisma.io'
+    const result = await prisma.$queryRaw`SELECT * FROM User WHERE email = ${email}`
+    ```
+    S druge strane "$queryRawUnsafe" i "$executeRawUnsafe" metode omogućavaju direktno umetanje sirovih podataka koje zadaje korisnik. Ove metode se koriste kada želimo proslediti sirov SQL upit bez ikakve automatske obrade od strane Prisma Client-a što povećava rizik od SQL Injection napada. Kod korišćenja "$queryRawUnsafe" i "$executeRawUnsafe", posebno je bitno paziti da se pravilno upravlja unosima korisnika i da se osigura da su ti unosi bezbedni od zlonamernih SQL koda. Ako se koristi ovaj pristup, preporučuje se temeljna provera i validacija korisničkih unosa pre nego što se unesu u SQL upit kako bi se izbegli potencijalni sigurnosni rizici. Ovaj pristup je "nesiguran" (unsafe) upravo zbog mogućnosti direktnog umetanja neobrađenih korisničkih podataka u SQL upite, što može dovesti do ranjivosti na SQL injection napade.
+    ```
+     prisma.$queryRawUnsafe(
+     'SELECT * FROM users WHERE email = $1',
+     'emelie@prisma.io; DROP TABLE users --'
+      )
+    ```
+6. Evidencija, praćenje i upozoravanje<br>
 Zaustavljanje ovih napada je neprestana borba koja se nikad neće završiti, ali najbolji način za ublažavanje uticaja ovih napada je što efikasnije reagovanje.
 Ključni element u reagovanju na bilo koji napad je prvo prepoznati da se nešto dešava.
 
@@ -115,10 +166,13 @@ Obuka zaposlenih o bezbednosnim praksama takođe može biti značajan vid preven
 7. Redovno pravljenje rezervnih kopija podataka (backup) [M7] <br>
 Redovno pravljenje rezerbnih kopija može pomoći brzom oporavku od Ransomware napada. Ukoliko žrtvi nije bitno da li će ovi podaci biti objavljeni, rezervna kopija može u potpunosti da ga spasi.
  
-## Reference 
-1. https://kinsta.com/knowledgebase/what-is-postgresql/
-2. https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf
-3. https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
-4. https://www.techtarget.com/searchsecurity/tip/6-ways-to-prevent-privilege-escalation-attacks
-5. https://www.imperva.com/blog/postgresql-database-ransomware-analysis/
-6. https://www.postgresql.fastware.com/postgresql-insider-sec-ransom
+# Reference 
+
+[1] https://kinsta.com/knowledgebase/what-is-postgresql/
+[2] https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf
+[3] https://www.prisma.io/docs/orm/reference/prisma-client-reference
+[4] https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/custom-and-type-safe-queries
+[5] https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
+[6] https://www.techtarget.com/searchsecurity/tip/6-ways-to-prevent-privilege-escalation-attacks
+[7] https://www.imperva.com/blog/postgresql-database-ransomware-analysis/
+[8] https://www.postgresql.fastware.com/postgresql-insider-sec-ransom
