@@ -76,7 +76,7 @@ Slika 1.3 pruža primer administratora koji se povezuje sa SQL Server-om i poku�
     ```
 4. Parametrizovani upiti<br>
 Kada je reč o zloupotrebi uskladištenih procedura u kombinaciji sa SQL injection-om, bitno je koristiti parametrizovane upite u aplikaciji, kako bi se izbeglo direktno umetanje korisničkih podataka u upite. 
-U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje Node.js aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
+U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje NodeJS aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
 Ovaj alat pruža mogućnost korišćenja Prisma Client [[3]](#reference) koji automatski generiše parametrizovane upite, koristeći parametre umesto direktnog umetanja vrednosti u upit. Ovim se efikasno sprečavaju potencijalni SQL injection napadi. 
    ```
     const prisma = new PrismaClient({})
@@ -86,25 +86,27 @@ Ovaj alat pruža mogućnost korišćenja Prisma Client [[3]](#reference) koji au
       },
     })
    ```
-    Međutim Prisma Client omogućava i slanje sirovih upita (raw queries) [[4]](#reference) ka bazi podataka, što može biti korisno u određenim situacijama, kao što su zahtevi za izuzetno oprimizovanim upitima ili kada je potrebma podrška za funkcionalnosti koje Prisma Client možda još uvek ne podržava. Upotreba sirovih upita nosi određene rizike pogotovo u vezi sa SQL Injection napadima. Kada se koriste "$queryRaw" i "$executeRaw" metode, unos korisnika se tretira kao parametar u SQL upitu, što znači da će Prisma automatski koristiti prepared statement kako bi se izbeglo dirktno umetanje vrednosti. To pruža određeni nivo zaštite od SQL Injection napada jer se vrednosti tretiraju kao podaci, a ne kao deo samog SQL koda.
+    Međutim Prisma Client omogućava i slanje sirovih upita (raw queries) [[4]](#reference) ka bazi podataka, što može biti korisno u određenim situacijama, kao što su zahtevi za izuzetno oprimizovanim upitima ili kada je potrebma podrška za funkcionalnosti koje Prisma Client možda još uvek ne podržava. Upotreba sirovih upita nosi određene rizike pogotovo u vezi sa SQL Injection napadima. Kada se koriste "$queryRaw" i "$executeRaw" metode, unos korisnika se tretira kao parametar u SQL upitu, što znači da će Prisma automatski koristiti prepared statement kako bi se izbeglo dirktno umetanje vrednosti. To pruža određeni nivo zaštite od SQL Injection napada jer se vrednosti tretiraju kao podaci, a ne kao deo samog SQL upita.
    ```
-    const email = 'emelie@prisma.io'
-    const result = await prisma.$queryRaw`SELECT * FROM User WHERE email = ${email}`
+    const userId = "1"
+    const novaLozinka = "nova lozinka"
+    const result = await prisma.$queryRaw`CALL PromeniLozinku(${userId}, ${novaLozinka})`
     ```
     S druge strane "$queryRawUnsafe" i "$executeRawUnsafe" metode omogućavaju direktno umetanje sirovih podataka koje zadaje korisnik. Ove metode se koriste kada želimo proslediti sirov SQL upit bez ikakve automatske obrade od strane Prisma Client-a što povećava rizik od SQL Injection napada. Kod korišćenja "$queryRawUnsafe" i "$executeRawUnsafe", posebno je bitno paziti da se pravilno upravlja unosima korisnika i da se osigura da su ti unosi bezbedni od zlonamernih SQL koda. Ako se koristi ovaj pristup, preporučuje se temeljna provera i validacija korisničkih unosa pre nego što se unesu u SQL upit kako bi se izbegli potencijalni sigurnosni rizici. Ovaj pristup je "nesiguran" (unsafe) upravo zbog mogućnosti direktnog umetanja neobrađenih korisničkih podataka u SQL upite, što može dovesti do ranjivosti na SQL injection napade.
     ```
+     //Ovaj zlonamerni input bi mogao da dovede do promene lozinke za sve korisnike u sistemu,
+      jer uslov OR 1=1 u SQL upitu uvek biva tačan, zanemarujući stvarne vrednosti userId
+    
+     const userId = "1 OR 1=1; --"
+     const novaLozinka = "nova lozinka"
      prisma.$queryRawUnsafe(
-     'SELECT * FROM users WHERE email = $1',
-     'emelie@prisma.io; DROP TABLE users --'
+         'CALL PromeniLozinku('${userId}', '${novaLozinka}')'
       )
     ```
-6. Evidencija, praćenje i upozoravanje<br>
-Zaustavljanje ovih napada je neprestana borba koja se nikad neće završiti, ali najbolji način za ublažavanje uticaja ovih napada je što efikasnije reagovanje.
-Ključni element u reagovanju na bilo koji napad je prvo prepoznati da se nešto dešava.
 
 ## Privilege Escalation
 
-Privilege Escalation predstavlja napad s ciljem dobijanja neovlašćenog pristupa povišenim pravima, dozvolama, privilegijama ili ovlašćenjima.
+Privilege Escalation [[5]](#reference) predstavlja napad s ciljem dobijanja neovlašćenog pristupa povišenim pravima, dozvolama, privilegijama ili ovlašćenjima.
 Napadi eskalacije privilegija su podeljeni u dve kategorije: horizontalna eskalacija i vertikalna eskalacija.
 Horizontalna eskalacija privilegija podrazumeva situaciju u kojoj napadač pokušava preuzeti kontrolu nad drugim korisničkim nalozima koji imaju slične privilegije kao nalog koji je već kompromitovan.
 Obično, ova vrsta eskalacije uključuje naloge nižeg nivoa (na primer, standardnog korisnika) koji možda nemaju odgovarajuću zaštitu. Svaki put kada napadač kompromituje novi nalog, proširuje svoju sferu pristupa sa sličnim privilegijama.
@@ -131,7 +133,6 @@ Na ovaj način napad Privilege Escalation ostvaruje pretnju 'Neovlašćena manip
 Mitigacije koje se mogu primeniti kako bi se smanjio rizik od Privilege Escalation napada, a opisane su u prethodnom napadu:
 1. Jaka autentifikacija [M1]<br>
 2. Sigurnosne konfiguracija [M2] <br>
-3. Evidencija, praćenje i upozoravanje [M3] <br><br>
 
 Dodatno:
 1. Redovno ažuriranje sistema [M5]<br>
@@ -146,10 +147,29 @@ Potrebno je naglasiti opasnosti i rizike deljenja naloga i akreditacija.
 
 ## Ransomware Attack [N3]
 
-Ransomware napad je vrsta cyber napada tokom kog napadač inficira sistem zlonamernim softverom koji šifrira podatke ili blokira pristup korisnicima do određenog vremena,
+Ransomware napad [[7]](#reference) je vrsta cyber napada tokom kog napadač inficira sistem zlonamernim softverom koji šifrira podatke ili blokira pristup korisnicima do određenog vremena,
 uz zahtev za plaćanje otkupnine kako bi žrtva ponovo dobila pristup svojim podacima. Iako žrtva plati otkupninu, i dalje postoji mogućnost da nikada ne dobije svoje podatke, pa čak i da budu javno objavljeni.
 
-Napadač prvo pokušava dobiti pristup sistemu koristeći se različitim metodama kao što su brute force napadi, eksploatacija ranjivosti ili phishing. Kada dobije pristup sledi prikupljanje informacija o PostgreSql bazi, tabelama i korisnicima, a zatim enkriptuje podatke i na taj način ih čini nečitljivim bez odgovarajućeg ključa za dekripciju. Kako bi povećao pritisak na žrtvu, napadač može podatke preneti na lokacije koje on kontroliše i obrisati ih iz sistema. Nakon toga ostavlja poruku, koja sadrži obaveštenje o napadu i zahtev za plaćanje određene sume novca. Kako bi povećao pritisak, napadač može zapretiti da će javno objaviti ukradene podatke ukoliko otkupnina ne bude plaćena u određenom roku. Na ovaj način Ransomware Attack ostvaruje pretnju 'Gubitak podataka' [P2].
+Napadač prvo pokušava dobiti pristup sistemu koristeći se različitim metodama kao što su brute force napadi, eksploatacija ranjivosti ili phishing. Kada dobije pristup sledi prikupljanje informacija o PostgreSql bazi, tabelama i korisnicima kako bi saznao koji podaci su zanimljivi. <br>
+   
+    
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'; - prikazivanje tabela u bazi podataka
+    
+        SELECT * FROM ime_tabele; - prikazivanje podataka u tabeli
+        
+        SELECT usename, usecreatedb, usesuper FROM pg_user; - prikaz korisnika sa njihovim privilegijama
+    
+    
+Nakon prikupljanja podataka podaci se enkriptuju i na taj način ih čini nečitljivim bez odgovarajućeg ključa za dekripciju. Ovaj proces jednostavno podrazumeva pristupanje podacima, njihovu enkripciju pomoću ključa pod kontrolom napadača i zamenjivanje originalnih podataka enkriptovanim verzijama. Većina varijanti ransomware-a pažljivo bira datoteke koje će enkriptovati kako bi obezbedile stabilnost sistema. Kako bi povećao pritisak na žrtvu, napadač može podatke preneti na lokacije koje on kontroliše i obrisati ih iz sistema. Kako bi ih obrisao prvo je neophodno da se završe backend procesi, tj. procesi koji upravljaju konekcijom klijenta sa bazom podataka. Ovim pokušajem terminacije procesa, napadač želi osloboditi objekte baze podataka kako bi kasnije mogao da ih obriše. To je moguće učiniti sledećom komandom:
+   ```
+     SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activitz WHERE 
+     pg_stat_activity.datname <> 'postgres' AND pid <> pg_backend_pid()
+   ```
+Ova komanda je deo strategije "Hit and Run" napada, gde napadač nastoji brzo izvršiti svoj plan bez suvišnih mera prikrivanja.
+<br><br>
+Nakon toga napadač ostavlja poruku, koja sadrži obaveštenje o napadu i zahtev za plaćanje određene sume novca kao što je prikazano na Slici 3.1. Kako bi povećao pritisak, napadač može zapretiti da će javno objaviti ukradene podatke ukoliko otkupnina ne bude plaćena u određenom roku. Na ovaj način Ransomware Attack ostvaruje pretnju 'Gubitak podataka' [P2].
+
+![Slika 3.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/ransomware-notes.PNG "Slika 3.1") <br> Slika 3.1<br>
 
 ### Mitigacije
 
@@ -157,22 +177,74 @@ Napadač prvo pokušava dobiti pristup sistemu koristeći se različitim metodam
 S obzirom da Ransomware napadi često počinju krađom kredencijala, veoma je bitno koristiti nepredvidive lozinke. Takođe dvofaktorska autentifikacija ili drugi oblici jake autentifikacije znčajno mogu otežati napadačima dobijanje pristupa čak i ko dođe do korisničkih imena i lozinki. <br><br>
 2. Sigurnosne konfiguracije [M2] <br>
 Bitna stvar je da se pažljivo upravlja privilegijama korisnika i da se broj privilegovanih korisnika smanji na minimum kako bi se ograničio pristup podacima i operacijama. <br><br>
-3. Evidencija praćenje i upozoravanje [M4] <br>
-Postavljanjem sistema za detekciju neobičnih događaja može pomoći brzoj identifikaciji sumnjivih događaja <br><br>
-4. Redovno ažuriranje sistema [M5] <br>
-Neophodno je redovno pratiti i primenjivati redovna ažuriranja sistema, jer nove verzije često ispravljaju ranjivosti i poboljšavaju sigurnost sistema <br><br>
-5. Obuka zaposlenih o bezbednosti [M6] <br>
+3. Obuka zaposlenih o bezbednosti [M6] <br>
 Obuka zaposlenih o bezbednosnim praksama takođe može biti značajan vid prevencije Ransomware napada, pogotovo jer su phishing napadi često njegova početna tačka. <br><br>
-7. Redovno pravljenje rezervnih kopija podataka (backup) [M7] <br>
-Redovno pravljenje rezerbnih kopija može pomoći brzom oporavku od Ransomware napada. Ukoliko žrtvi nije bitno da li će ovi podaci biti objavljeni, rezervna kopija može u potpunosti da ga spasi.
- 
+4. Redovno pravljenje rezervnih kopija podataka (backup) [M7] <br>
+Redovno pravljenje rezerbnih kopija [[8]](#reference) može pomoći brzom oporavku od Ransomware napada. Ako su podaci sigurni na sigurnosnim kopijama, organizacije mogu ozbeći plaćanje otkupnine kako bi vratile pristup podacima. Čest je slučaj da žrtve nisu mogle oporaviti svoje podatke sa sigurnosnih kipija, uprkos njihovom ptavljenju. Jedan od uzroka za to je kada su podaci sa sigurnosnih kopija stari ili neki deo podataka nedostaje. Međutim ovi podaci takođe mogu biti zaraženi i šifrovani ransomwerom što se najčešće i događa u invazivnim randomware napadima. Ako se podaci čuvaju na prostoru diska ili deljenog foldera kome se može direktno pristupiti od strane kompromitovanog servera, ransomware će ih takođe zaraziti i šifrovati, čime će onemogućiti oporavak podataka.
+Da bi se ovakva šteta sprečila korisno je pravilo "3-2-1". Preporučuje se čuvanje sigurnosnih kopija podataka prema tri pravila: čuvajte tri kopije fajlova, sačuvane na dva različita tipa medija i jednu kopiju čuvajte van radnog mesta (npr fizički odvojeno od ustanove). <br><br>
+![Slika 3.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/ransomware-321-rule.png "Slika 3.2") <br> Slika 3.2<br>
+
+5. Enkripcija podataka <br>
+Veoma je bitno ekriptovati podatke, tako da čak i ako su podaci ukradeni oni ne cure. Moguće je kriptovati podatke u samoj bazi podataka ili u aplikaciji (NodeJS).
+
+    Ukoliko se kriptovanje vrši na strani PostgreSQL-a [[9]](#reference), može se otežati migracija podataka između različitih baza, ali se smanjuje opterećenje ba strani NodeJS aplikacije. Postoji više različitih načina za kriptovanje podataka na strani PostreSQL-a, npr simetrično i asimetrično šifrovanje. Prilikom simetričnog šifrovanja podataka koriste se funkcije za enkriptovanje:
+   ```
+       pgp_sym_encrypt(data text, psw text [, options text ]) returns bytea
+       pgp_sym_encrypt_bytea(data bytea, psw text [, options text ]) returns bytea
+   ```
+    kao i funkcije za dekriptovanje:
+   ```
+      pgp_sym_decrypt(msg bytea, psw text [, options text ]) returns text
+      pgp_sym_decrypt_bytea(msg bytea, psw text [, options text ]) returns bytea
+   ```
+    Za asimetrično šifrovanje koriste se funkcije pgp_pub_encrypt, pgp_pub_encrypt_bytea, dok se za dešifrovanje koriste funkcije pgp_pub_decrypt i pgp_pub_decrypt_bytea. 
+
+    Enkripcija na strani NodeJS-a [[10]](#reference) omogućava veću kontrolu (moguće je koristiti različite algoritme enkripcije koji nisu nužno podržani u bazi podataka) i pomaže u održavanju doslednosti u enkripciji između više različitih baza podataka (ukoliko se koristi više različitih baza). Jedan od načina šifrovanja i podataka jeste korišćenjem ugrađenje NodeJS biblioteke crypto. Ovu biblioteku je moguće koristiti za šifrovanje podataka bilo kog tipa.
+   ```
+     //Checking the crypto module
+     const crypto = require('crypto');
+     const algorithm = 'aes-256-cbc'; //Using AES encryption
+     const key = crypto.randomBytes(32);
+     const iv = crypto.randomBytes(16);
+   
+     //Encrypting text
+     function encrypt(text) {
+         let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+         let encrypted = cipher.update(text);
+         encrypted = Buffer.concat([encrypted, cipher.final()]);
+         return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+     }
+
+    // Decrypting text
+    function decrypt(text) {
+        let iv = Buffer.from(text.iv, 'hex');
+        let encryptedText = Buffer.from(text.encryptedData, 'hex');
+        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+        let decrypted = decipher.update(encryptedText);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return decrypted.toString();
+    }
+   ```
+
 # Reference 
 
-[1] https://kinsta.com/knowledgebase/what-is-postgresql/
-[2] https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf
-[3] https://www.prisma.io/docs/orm/reference/prisma-client-reference
-[4] https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/custom-and-type-safe-queries
+[1] https://kinsta.com/knowledgebase/what-is-postgresql/ *
+
+[2] https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf *
+
+[3] https://www.prisma.io/docs/orm/reference/prisma-client-reference *
+
+[4] https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/custom-and-type-safe-queries *
+
 [5] https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
-[6] https://www.techtarget.com/searchsecurity/tip/6-ways-to-prevent-privilege-escalation-attacks
-[7] https://www.imperva.com/blog/postgresql-database-ransomware-analysis/
-[8] https://www.postgresql.fastware.com/postgresql-insider-sec-ransom
+
+[6]
+
+[7] https://www.imperva.com/blog/postgresql-database-ransomware-analysis/ *
+
+[8] https://www.postgresql.fastware.com/postgresql-insider-sec-ransom *
+
+[9] https://www.postgresql.org/docs/current/pgcrypto.html *
+
+[10] https://www.tutorialspoint.com/encrypt-and-decrypt-data-in-nodejs *
+
