@@ -15,7 +15,8 @@ U okviru ove pretnje ugroženi su sami podaci u bazi podataka. Deo podataka ili 
 Napadač podatke čini nedostupnim kako bi vršio iznudu ili ucenu pojedinca/organizacije. Ako bi ukradeni podaci postali javni to može oštetiti reputaciju žrtve.
 Klijenti, partneri i korisnici mogu izgubiti poverenje u organizaciju zbog nesposobnosti da zaštiti svoje podatke
 
-![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/PostgreSql-attack-tree.png)
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Dijagrami/PostreSQL-attack-tree.png)
+<br> Stablo napada<br>
 
 ## Napadi
 
@@ -55,7 +56,7 @@ Potreba za jakom autentifikacijom je važna bez obzira na tip naloga, ali je dup
 2. Sigurnosne konfiguracije [M2] <br>
 Da bi se postigla dodatna zaštita potrebno je smanjiti površinu dobijanja pristupa nalogu. To se može postići eliminisanjem nepotrebnih resursa kao što su aplikacije koje nisu neophodne za rad SQL servera,
 preimenovanjem, onemogućavanjem i/ili brisanjem nepotrebnih naloga. Neophodno je ograničiti privilegije korisničkim nalozima samo na ono što im je potrebno za obavljanje funkcija.<br><br>
-3. Uklanjanje nepotrebnih uskladištenih procedura<br>
+3. Uklanjanje nepotrebnih uskladištenih procedura [M3]<br>
 Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. Ukoliko su one ipak u nekim okolnostima neophodne, ali nije potrebno da uvek budu aktivne, treba ih onemogućiti. <br>
 Slika 1.3 pruža primer administratora koji se povezuje sa SQL Server-om i pokušava iskoristiti funkcionalnost produžene uskladištene procedure xp_cmdshell. Početna greška ukazuje da je tražena uskladištena procedura onemogućena i da administrator nije u mogućnosti uspešno završiti zahtevanu komandu. <br><br>
    ![Slika 1.3](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/disabled-procedure.PNG "Slika 1.2") <br> Slika 1.3<br>
@@ -74,7 +75,7 @@ Slika 1.3 pruža primer administratora koji se povezuje sa SQL Server-om i poku�
     RECONFIGURE
     GO
     ```
-4. Parametrizovani upiti<br>
+4. Parametrizovani upiti [M4]<br>
 Kada je reč o zloupotrebi uskladištenih procedura u kombinaciji sa SQL injection-om, bitno je koristiti parametrizovane upite u aplikaciji, kako bi se izbeglo direktno umetanje korisničkih podataka u upite. 
 U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje NodeJS aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
 Ovaj alat pruža mogućnost korišćenja Prisma Client [[3]](#reference) koji automatski generiše parametrizovane upite, koristeći parametre umesto direktnog umetanja vrednosti u upit. Ovim se efikasno sprečavaju potencijalni SQL injection napadi. 
@@ -125,25 +126,45 @@ Malver usmeren na PostgreSQL može se koristiti za krađu akreditacija, praćenj
 5. Social Engineering <br>
 Napadač može pokušati izvršiti napad na privilegije putem društvenog inženjeringa, gde pokušava manipulisati korisnicima ili administratorima baze podataka kako bi otkrili akreditacije ili izvršili radnje koje dovode do povećanja privilegija. To može uključivati phishing napade, lažne poruke ili druge oblike manipulacije.
 
+Konkretan primer zloupotrebe ranjivosti za eskalaciju privilegija - Ranjivost u funkciji sa SECURITY DEFINER [[6]](#reference) <br>
+U PostgreSQL, kada se kreira funkcija sa SECURITY DEFINER zastavicom, to znači da će se ta funkcija izvršavati sa privilegijama vlasnika funkcije, a ne sa privilegijama korisnika koji je poziva. Ovo može predstavljati potencijalni bezbednosni rizik ako funkcija nije pravilno zaštićena.
+    
+     CREATE OR REPLACE FUNCTION public.create_subscription(IN subscription_name text,IN host_ip text,IN portnum text,
+                                                             IN password text,IN username text,IN db_name text,IN publisher_name text)    
+     RETURNS text 
+     LANGUAGE 'plpgsql' 
+     VOLATILE SECURITY DEFINER 
+     PARALLEL UNSAFE 
+     COST 100 
+     
+    AS $BODY$ 
+            DECLARE 
+                 persist_dblink_extension boolean; 
+            BEGIN 
+                persist_dblink_extension := create_dblink_extension(); 
+                PERFORM dblink_connect(format('dbname=%s', db_name)); 
+                PERFORM dblink_exec(format('CREATE SUBSCRIPTION %s CONNECTION ''host=%s port=%s password=%s user=%s dbname=%s sslmode=require'' PUBLICATION %s',
+                                           subscription_name, host_ip, portNum, password, username, db_name, publisher_name)); 
+                PERFORM dblink_disconnect(); 
+                
+U datom kodu, postoji funkcija create_subscription koja ima SECURITY DEFINER zastavicu. Ona se koristi za stvaranje replikacione pretplate unutar PostgreSQL baze podataka. Problem koji se ovde ističe jeste da, ako napadač može kontrolisati parametre koje ta funkcija koristi, kao što su subscription_name, host_ip, portnum, password, username, db_name, i publisher_name, onda bi napadač mogao iskoristiti ovu funkciju za zlonamerne svrhe.
+
+    -- Napadač može ubaciti zlonamerni SQL kod kroz parametre
+    CREATE SUBSCRIPTION test3 CONNECTION 'host=127.0.0.1 port=5432 password=malicious_code user=ibm dbname=ibmclouddb sslmode=require' PUBLICATION     
+                                          test2_publication WITH (create_slot = false);
+
+Ako malicious_code predstavlja SQL kod sa ciljem eskalacije privilegija, napadač može izazvati izvršenje tog koda unutar konteksta funkcije sa SECURITY DEFINER zastavicom. 
+
 Nakon što napadač uspe u eskalaciji privilegija, posledice mogu biti ozbiljne, jer mu mogu omogućiti neovlašćeni pregled podataka, izmenu ili brisanje podataka, dodavanje lažnih podataka, promene šeme baze podataka, brisanje tabela. 
 Na ovaj način napad Privilege Escalation ostvaruje pretnju 'Neovlašćena manipulacija podacima i operacijama' [P1].
 
 ### Mitigacije
 
-Mitigacije koje se mogu primeniti kako bi se smanjio rizik od Privilege Escalation napada, a opisane su u prethodnom napadu:
-1. Jaka autentifikacija [M1]<br>
-2. Sigurnosne konfiguracija [M2] <br>
+- Implementacija jakih autentikacionih metoda, poput dvofaktorske autentikacije (M1), zajedno sa pravilno konfigurisanim sigurnosnim postavkama [M2], redovnim ažuriranjem sistema [M5] i redovnom obukom zaposlenih o bezbednosti [M6], predstavljaju ključne preventivne mere protiv Privilege Escalation napada. Redovno ažuriranje sistema smanjuje rizik od eksploatacije poznatih ranjivosti, dok obuke osoblja o bezbednosti podižu svest o potencijalnim pretnjama, uključujući rizik od deljenja akreditacija ili padanja na phishing napade. Ove zajedničke prakse čine organizaciju otpornijom na sajber pretnje, pružajući sveobuhvatan pristup očuvanju bezbednosti informacija.
 
-Dodatno:
-1. Redovno ažuriranje sistema [M5]<br>
-Bitno je pratiti i primenjivati bezbednosne zakrpe i ispravke sistema kako bi se smanjio rizik od eksploatacije poznatih ranjivosti.
-Smanjenje šansi da napadač pronađe iskorišćivu ranjivost najbolji je način da se zaustavi svaka vrsta sajber napada. 
-<br><br>
-2. Obuka zaposlenih o bezbednosti [M6]<br>
-Ljudi su obično najslabija karika u sigurnosti svake organizacije.
-Oni mogu nesvesno doprineti napadu eskalacije koristeći slabe lozinke, klikćući na zlonamerne linkove ili priloge, i ignorišući upozorenja u vezi sa opasnim veb sajtovima.
-Redovne obuke o bezbednosti osiguravaju da se nove pretnje mogu objasniti, kao i da se u svesti zaposlenih održavaju bezbednosne politike.
-Potrebno je naglasiti opasnosti i rizike deljenja naloga i akreditacija.
+- Pažljiva upotreba SECURITY DEFINER-a [M9]<br>
+Ako se koriste funkcije sa SECURITY DEFINER flagom, bitno je pažljivo razmotriti šta tačno funkcija radi i koji su parametri kontrolisani od strane korisnika. Ako je moguće dobro bi bilo ograničiti privilegije unutar same funkcije. Na primer, ako funkcija vrši SELECT upit, može se ograničiti na minimalni skup tabela koji je potreban za rad funkcije. Takođe dobra praksa je i izbegavanje davanja suvišnih privilegija vlasniku funkcije.
+
 
 ## Ransomware Attack [N3]
 
@@ -184,7 +205,7 @@ Redovno pravljenje rezerbnih kopija [[8]](#reference) može pomoći brzom oporav
 Da bi se ovakva šteta sprečila korisno je pravilo "3-2-1". Preporučuje se čuvanje sigurnosnih kopija podataka prema tri pravila: čuvajte tri kopije fajlova, sačuvane na dva različita tipa medija i jednu kopiju čuvajte van radnog mesta (npr fizički odvojeno od ustanove). <br><br>
 ![Slika 3.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/ransomware-321-rule.png "Slika 3.2") <br> Slika 3.2<br>
 
-5. Enkripcija podataka <br>
+5. Enkripcija podataka [M8]<br>
 Veoma je bitno ekriptovati podatke, tako da čak i ako su podaci ukradeni oni ne cure. Moguće je kriptovati podatke u samoj bazi podataka ili u aplikaciji (NodeJS).
 
     Ukoliko se kriptovanje vrši na strani PostgreSQL-a [[9]](#reference), može se otežati migracija podataka između različitih baza, ali se smanjuje opterećenje ba strani NodeJS aplikacije. Postoji više različitih načina za kriptovanje podataka na strani PostreSQL-a, npr simetrično i asimetrično šifrovanje. Prilikom simetričnog šifrovanja podataka koriste se funkcije za enkriptovanje:
@@ -228,23 +249,23 @@ Veoma je bitno ekriptovati podatke, tako da čak i ako su podaci ukradeni oni ne
 
 # Reference 
 
-[1] https://kinsta.com/knowledgebase/what-is-postgresql/ *
+[1] https://kinsta.com/knowledgebase/what-is-postgresql/ 
 
-[2] https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf *
+[2] https://booksite.elsevier.com/samplechapters/9781597495516/02~Chapter_3.pdf 
 
-[3] https://www.prisma.io/docs/orm/reference/prisma-client-reference *
+[3] https://www.prisma.io/docs/orm/reference/prisma-client-reference 
 
-[4] https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/custom-and-type-safe-queries *
+[4] https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/custom-and-type-safe-queries 
 
 [5] https://www.beyondtrust.com/blog/entry/privilege-escalation-attack-defense-explained
 
-[6]
+[6] https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql
 
-[7] https://www.imperva.com/blog/postgresql-database-ransomware-analysis/ *
+[7] https://www.imperva.com/blog/postgresql-database-ransomware-analysis/ 
 
-[8] https://www.postgresql.fastware.com/postgresql-insider-sec-ransom *
+[8] https://www.postgresql.fastware.com/postgresql-insider-sec-ransom 
 
-[9] https://www.postgresql.org/docs/current/pgcrypto.html *
+[9] https://www.postgresql.org/docs/current/pgcrypto.html 
 
-[10] https://www.tutorialspoint.com/encrypt-and-decrypt-data-in-nodejs *
+[10] https://www.tutorialspoint.com/encrypt-and-decrypt-data-in-nodejs 
 
