@@ -7,7 +7,7 @@ Ključni resurs koji može biti ugrožen u okviru AWS S3 usluge su bucket-i sa s
 2. Gubitak kontrole nad bucket-om [P2] <br>
 Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svojim podacima. Pored ugrožavanja poverljivosti informacija, direktno su ugroženi i integritet i dostupnost podataka smešteni unutar njega. Napadač ima mogućnost da pregleda, menja ili briše podatake, kao i da dodaje zlonamerni sadržaj i na taj način izvodi druge napade kao što je Phishing. Na ovaj način napadač može da nanese štetu organizaciji, zloupotrebi podatke, vrši ucene ili iznude finansijskih sredstava. 
 
-![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Dijagrami/awss3-attack-tree.png)
+![Stablo napada](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Dijagrami/aws-s3-attack-tree.png)
 
 ## Napadi
 
@@ -95,16 +95,22 @@ CloudTrail beleži svaki zahtev za pristup bucket-ovima, što omogućava identif
  
 ### Bucket takeover [N3]
 
-Napadač preuzima kontrolu nad nepravilno konfigurisanim Amazon S3 bucket-om koji je prethodno bio pod kontrolom legitimnog vlasnika.
+Bucket takover [[8]](#reference) predstavlja moćan napad koji cilja nepravilno konfigurisane S3 bucket-e. Ovaj napad omogućava napadačima pristup privatnom prostoru za skladištenje koji pripada organizaciji ili pojedincu, pristup podacima unutar njega i preuzimanje potpune kontrole nad bucket-om.
 
-Prvo je potrebno identifikovati bucket-e koji će biti meta napada. Budući da Bucket Enumeration predstavlja pronalazak javnih bucket-a upravo ovaj napad često predhodi Bucket Takeover napadu. Nakon identifikacije ciljnog bucket-a sledi proučavanje konfiguracije kao što su podešavanja IAM politika, Bucket-Level politika, S3 Bucket ACL-ova i drugih sa ciljem pronalska potencijalnih ranjivosti. Napadač zatim pokušava da preuzme kontrolu nad bucket-om kradjom autentifikacionih podataka, iskorišćavanjem ranjivosti ili pokušajem preuzimanja kontrole nad IAM ulogama koje imaju pristup bucket-u. Nakon preuzimanja bucket-a, ostvarena je pretnja 'Gubitak kontrole nad bucket-om' [P2]. Napadač nakon toga može da promeni konfiguracije bucket-a kako bi omogućio šire privilegije, dodao ili izbrisao IAM korisnike ili role, promenio Bucket-Level politike ili S3 Bucket ACL-ove u svoju korist. Ima mogućnost narušavanja integriteta podataka jer može da ih menja, briše ili dodaje nove. Može da izvršava druge napade kao što su Data Exfilitration ili Phishing napad dodavanjem zlonamernih objekata. 
+Prvi korak u izvođenju ovog napada predstavlja identifikaciju bucket-e koji će biti meta napada. Budući da ovim bucket-ima nedostaju odgovarajuće sigurnosne mere, to ih čini podložnim otkrivanju od strane napadača pomoću alatki koje se koriste u Bucket Enumeration-u (S3Scanner, S3Finder,..). Kada se adresa potencijalno ranjivog S3 bucket-a poseti pomoću veb pretraživača, pisaće da bucket ne postoji kao što je prikazano na Slici 3.1. To znači da je programer obrisao S3 bucket, ali nije obrisao cname (Canonical Name - tip DNS zapisa). Ova situacija je dovoljna da se zaključi da ranjivost može biti iskorišćena. <br><br>
+![Slika 3.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/no-such-bucket.png) <br> Slika3.1 <br>
+
+Da bi napadač preuzeo kontrolu nad adresom s3 bucket-a, prvi korak jeste kreiranje novog bucket-a. Ovo može biti odrađeno bez obzira na vlasništvo. Pretpostavlja se da je ranjivo okruženje "test.s3.amazonaws.com", tako da je za naziv bucket-a potrebno uneti "test". Nakon ovoga napadač može da podesi ostale konfiguracije kako njemu odgovara, kao što su npr javni pristup bucket-u ili da onemogući KMS Encryption opciju koja je podrazumevano omogućena. 
+Nakon uspešnog kreiranja bucket-a, biće kreirane različite permisije i politike kako bi se omogućilo dodavanje željenih podataka u bucket. Da bi se to postiglo, prvo je potrebno konfigurisati opciju Static Web Hosting pod sekcijom Properties (u prvom koraku omogućiti Static Web Hosting, a u drugom koraku dodati ime fajla koji će se pojaviti u bucket-u pod index.html). Sledeći korak je dodavanje index.html fajla koji će se prikazivati na veb interfejsu. Napadač će to učiniti tako što će ići na Buckets > "Ime bucket-a" i izabrati obciju Objects. Nakon toga klikom na dugme Upload i izborom fajla ga i dodaje. Poslednji korak je podešavanje politika koje omogućavaju javni pristup objektima u bucket-u.
+
+Ovim koracima napadač je postao vlasnik i stekao potpunu kontrolu nad bucket-om koji je nekada bio u vlasništvu pojedinca/kompanije i ostvario pretnju 'Gubitak kontrole nad bucket-om' [P2].
 
 #### Mitigacije 
 
 1. Konfiguracija pristupa [M1]<br>
 Kao i u pretnodna dva napada, konfiguracija pristupa igra ključnu ulogu kada je reč u prevencijama napada. <br><br>
-2. Multifaktorska autentifikacija (MFA) [M4] <br>
-Multifaktorska autentifikacija (MFA) je snažna bezbednosna praksa koja dodaje dodatni sloj autentifikacije kako bi se zaštitili korisnički nalozi i resursi, uključujući Amazon S3 bucket-ove. MFA za S3 resurse može se primeniti kako bi se otežao ili onemogućio neovlašćeni pristup, posebno nakon napada kao što je Bucket Takeover. Npr MFA se može postaviti pre nego što se korisniku dozvoli da menja neki resurs ili da ga briše. <br><br>
+2. Brisanje DNS zapisa [M4]<br>
+Ako postoje S3 buvket-i koji su obrisani, a DNS zapisi za taj bucket i dalje postoje, to može predstavljati ozbiljan bezbednosni rizik. Napadač može preuzeti kontrolu nad tim neiskorišćenim DNS zapisima i usmeriti ih ka drugom S3 bucket-u koju kontroliše kao što je opisano. Ovo predstavlja preventivnu bezbednosnu meru koja pomaže u očuvanju sigurnosti i sprečava potencijalne bezbednosne probleme. <br><br>
 3. Enkripcija podataka [M2]<br>
 Ukoliko je kontrola nad bucket-om već izgubljena dobro bi bilo da su podaci šifrovani, korišćenjem tehnika za šifrovanje koje su prethodno opisane, kako makar ne bi mogao da ih zloupotrebi. <br><br>
 4. Praćenje i detekcija aktivnosti [M5] <br>
@@ -112,19 +118,19 @@ CloudTrail omogućava praćenje svih događaja i aktivnosti unutar AWS infrastru
 
 # Reference
 
-[1] https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html *
+[1] https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html 
 
-[2] https://www.shehackske.com/how-to/data-exfiltration-on-cloud-1606/ *
+[2] https://www.shehackske.com/how-to/data-exfiltration-on-cloud-1606/ 
 
-[3] https://hackingthe.cloud/aws/exploitation/s3_server_access_logs/ *
+[3] https://hackingthe.cloud/aws/exploitation/s3_server_access_logs/ 
 
-[4] https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html *
+[4] https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html 
 
-[5] https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/ *
+[5] https://binaryguy.tech/aws/s3/iam-policies-vs-s3-policies-vs-s3-bucket-acls/ 
 
-[6] https://www.geeksforgeeks.org/s3-bucket-enumeration-and-exploitation/ *
+[6] https://www.geeksforgeeks.org/s3-bucket-enumeration-and-exploitation/ 
 
-[7] https://medium.com/@aka.0x4C3DD/s3-bucket-enumeration-research-and-insights-674da26c049e *
+[7] https://medium.com/@aka.0x4C3DD/s3-bucket-enumeration-research-and-insights-674da26c049e 
 
-[8] https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/ - bucket takeover
+[8] https://socradar.io/aws-s3-bucket-takeover-vulnerability-risks-consequences-and-detection/ 
    
