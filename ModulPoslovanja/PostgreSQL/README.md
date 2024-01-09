@@ -37,16 +37,22 @@ umesto da se ograniči na osnovne funkcionalnosti koje već ima kao administrato
 Uskladištene procedure mogu omogućiti napadaču da izvršava SQL upite, manipuliše nad šemama baze podataka i tako izaziva štetne efekte. 
 Na ovaj način se ostvaruje pretnja Neovlašćena manipulacija podacima i operacijama [P1].
 
-Jedan od najčešćih scenarija napada jeste korišćenje uskladištenih procedura za dodavanje korisničkih naloga. Slika 1.1 prikazuje napadača koji se povezuje na SQL server koristeći sqlcmd alat i autentifikuje se validnim pristupnim podacima. Nakon uspešne konekcije, napadač koristi xp_cmdshell uskladištenu proceduru da doda novi korisnički nalog na lokalni sistem <br><br>
-![Slika 1.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/adding-new-account-with-stored-procedure.PNG "Slika 1.1") <br> Slika 1.1<br>
-
-U nekim slučajevima napadači mogu razmotriti dodavanje dodatnog naloga kako bi sačuvali pristup u slučaju promene lozinke ili onemogućavanja naloga koji se koristi za pristup od strane napadača. Administratori baze podataka možda neće ni primetiti novi nalog ako nije omogućena provera za kreiranje naloga, ili ako nema praćenja i obaveštavanja za ovakvu vrstu aktivnosti. Slika 1.2 prikazuje napadača koji se povezuje sa SQL Serverom i koristi sp_addlogin uskladištenu proceduru putem sqlcmd alata kako bi kreirao novi nalog. Nakon što napadač doda novi nalog na SQL Server, eskalira njegove privilegije pozivanjem sp_addsrvrolemember uskladištene procedure. Ova procedura dodaje novo kreirani nalog u sysadmin fiksnu serversku ulogu, dodeljujući mu isti nivo pristupa kao i podrazumevani sa nalog. <br><br>
-![Slika 1.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/new-sa-account.PNG "Slika 1.2") <br> Slika 1.2<br>
-
-Iako prethodni primeri zahtevaju da napadač ima pristup nalogu sa visokim privilegijama, uskladištene procedure se takođe mogu zloupotrebiti u kombinaciji sa SQL Injection-om. Slično kao što je već opisano koristi se procedura xp_cmdshell za dodavanje novog korisnika, medjutim ovog puta napadač izvršava naredbu putem Web forme. <br><br>
-    ```
-  '; exec master..xp_cmdshell 'net user attacker P@ssw0rd /add'--
-    ``` 
+Napadač uskladištene procedure može zloupotrebiti ukoliko ima pristup nalogu sa visokim privilegijama ili u kombinaciji sa SQL Injection napadom (ovo podrazumeva da u aplikaciji postoji SQL Injection ranjivost).
+Tako npr može postojati uskladištena procedura za promenu lozinke korisnika promeniSifru(p_id, p_novaSifra) <br>
+```
+  BEGIN
+   EXECUTE 'UPDATE public."Korisnik" SET sifra = ''' || p_nova_sifra || ''' WHERE id = ' || p_id || ';';
+  END;
+```
+Ova procedura se poziva u Next.js aplikaciji koristeći prisma.$queryRawUnsafe kod kojih postoji ranjivost na SQL Injection: <br>
+```
+  async changePassword(id: string, nova_sifra: string){
+      await this.prisma.$queryRawUnsafe(
+        "CALL promeni_sifru('" + id + "', '" + nova_sifra + "')"
+    )
+    }
+```
+Ukoliko napadač prosledi vrednost za id "korisnik or 1=1", i unese željenu vrednost za šifru, promeniće šifru svim korisnicima u sistemu.
 
 #### Mitigacije
 
@@ -55,26 +61,21 @@ Slabe lozinke na defaultnim nalozima su jedna od stvari za koje se napadači naj
 Potreba za jakom autentifikacijom je važna bez obzira na tip naloga, ali je duplo važnija kada su u pitanju privilegovani nalozi koji imaju administrativna prava u okviru aplikacije. <br><br>
 2. Sigurnosne konfiguracije [M2] <br>
 Da bi se postigla dodatna zaštita potrebno je smanjiti površinu dobijanja pristupa nalogu. To se može postići eliminisanjem nepotrebnih resursa kao što su aplikacije koje nisu neophodne za rad SQL servera,
-preimenovanjem, onemogućavanjem i/ili brisanjem nepotrebnih naloga. Neophodno je ograničiti privilegije korisničkim nalozima samo na ono što im je potrebno za obavljanje funkcija.<br><br>
+preimenovanjem, onemogućavanjem i/ili brisanjem nepotrebnih naloga. Neophodno je ograničiti ko ima pristup kojim procedurama. <br>
+```
+  -- Dodela prava pristupa za izvršavanje procedure
+  GRANT EXECUTE ON PROCEDURE ime_procedure(parametri) TO ime_korisnika;
+
+  -- Uklanjanje prava pristupa za izvršavanje procedure
+  REVOKE EXECUTE ON PROCEDURE ime_procedure(parametri) FROM ime_korisnika;
+```
+<br><br>
 3. Uklanjanje nepotrebnih uskladištenih procedura [M3]<br>
-Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. Ukoliko su one ipak u nekim okolnostima neophodne, ali nije potrebno da uvek budu aktivne, treba ih onemogućiti. <br>
-Slika 1.3 pruža primer administratora koji se povezuje sa SQL Serverom i pokušava iskoristiti funkcionalnost produžene uskladištene procedure xp_cmdshell. Početna greška ukazuje da je tražena uskladištena procedura onemogućena i da administrator nije u mogućnosti uspešno završiti zahtevanu komandu. <br><br>
-   ![Slika 1.3](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/PostgreSQL/Slike/disabled-procedure.PNG "Slika 1.2") <br> Slika 1.3<br>
-<br> Međutim, ako uskladištena procedura nije potpuno uklonjena, administrator može ponovo omogućiti proceduru uz nekoliko jednostavnih komandi (pod pretpostavkom da administrator ima odgovarajuće dozvole). Procedura skladišta baze podataka "sp_configure" omogućava konfiguraciju mnogih opcija globalno na SQL Server instanci. Korišćenje "sp_configure" za ponovno omogućavanje uskladištene procedure omogućiće administratoru da nastavi sa zadatkom. <br>
-    ```
-    -- Omogući napredne opcije
-    EXEC sp_configure 'show advanced options', 1
-    GO
-    -- Primeni promenu konfiguracije
-    RECONFIGURE
-    GO
-    -- Omogući xp_cmdshell
-    EXEC sp_configure 'xp_cmdshell', 1
-    GO
-    -- Primeni promenu konfiguracije
-    RECONFIGURE
-    GO
-    ```
+Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. 
+```
+  DROP PROCEDURE procedure_name(parameter_list);
+```
+<br><br>
 4. Parametrizovani upiti [M4]<br>
 Kada je reč o zloupotrebi uskladištenih procedura u kombinaciji sa SQL injection-om, bitno je koristiti parametrizovane upite u aplikaciji, kako bi se izbeglo direktno umetanje korisničkih podataka u upite. 
 U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje NodeJS aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
@@ -89,19 +90,19 @@ Ovaj alat pruža mogućnost korišćenja Prisma Client [[3]](#reference) koji au
    ```
     Međutim Prisma Client omogućava i slanje sirovih upita (raw queries) [[4]](#reference) ka bazi podataka, što može biti korisno u određenim situacijama, kao što su zahtevi za izuzetno oprimizovanim upitima ili kada je potrebna podrška za funkcionalnosti koje Prisma Client možda još uvek ne podržava. Upotreba sirovih upita nosi određene rizike pogotovo u vezi sa SQL Injection napadima. Kada se koriste "$queryRaw" i "$executeRaw" metode, unos korisnika se tretira kao parametar u SQL upitu, što znači da će Prisma automatski koristiti prepared statement kako bi se izbeglo dirktno umetanje vrednosti. To pruža određeni nivo zaštite od SQL Injection napada jer se vrednosti tretiraju kao podaci, a ne kao deo samog SQL upita.
    ```
-    const userId = "1"
-    const novaLozinka = "nova lozinka"
-    const result = await prisma.$queryRaw`CALL PromeniLozinku(${userId}, ${novaLozinka})`
+    const id = "1"
+    const nova_sifra = "nova sifra"
+    const result = await prisma.$queryRaw`CALL PromeniSifru(${id}, ${nova_sifra})`
     ```
     S druge strane "$queryRawUnsafe" i "$executeRawUnsafe" metode omogućavaju direktno umetanje sirovih podataka koje zadaje korisnik. Ove metode se koriste kada želimo proslediti sirov SQL upit bez ikakve automatske obrade od strane Prisma Client-a što povećava rizik od SQL Injection napada. Kod korišćenja "$queryRawUnsafe" i "$executeRawUnsafe", posebno je bitno paziti da se pravilno upravlja unosima korisnika i da se osigura da su ti unosi bezbedni od zlonamernog SQL koda. Ako se koristi ovaj pristup, preporučuje se temeljna provera i validacija korisničkih unosa pre nego što se unesu u SQL upit kako bi se izbegli potencijalni sigurnosni rizici. Ovaj pristup je nesiguran upravo zbog mogućnosti direktnog umetanja neobrađenih korisničkih podataka u SQL upite, što može dovesti do ranjivosti na SQL injection napade.
     ```
      //Ovaj zlonamerni input bi mogao da dovede do promene lozinke za sve korisnike u sistemu,
       jer uslov OR 1=1 u SQL upitu uvek biva tačan, zanemarujući stvarne vrednosti userId
     
-     const userId = "1 OR 1=1; --"
-     const novaLozinka = "nova lozinka"
+     const id = "1 OR 1=1; --"
+     const nova_sifra = "nova sifra"
      prisma.$queryRawUnsafe(
-         'CALL PromeniLozinku('${userId}', '${novaLozinka}')'
+         'CALL PromeniSifru('${id}', '${nova_sifra}')'
       )
     ```
 
