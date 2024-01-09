@@ -41,7 +41,7 @@ Napadač uskladištene procedure može zloupotrebiti ukoliko ima pristup nalogu 
 Tako npr može postojati uskladištena procedura za promenu lozinke korisnika promeniSifru(p_id, p_novaSifra) <br>
 ```
   BEGIN
-   EXECUTE 'UPDATE public."Korisnik" SET sifra = ''' || p_nova_sifra || ''' WHERE id = ' || p_id || ';';
+     EXECUTE 'UPDATE public."Korisnik" SET sifra = ''' || p_nova_sifra || ''' WHERE id = ' || p_id || ';';
   END;
 ```
 Ova procedura se poziva u Next.js aplikaciji koristeći prisma.$queryRawUnsafe kod kojih postoji ranjivost na SQL Injection: <br>
@@ -49,8 +49,8 @@ Ova procedura se poziva u Next.js aplikaciji koristeći prisma.$queryRawUnsafe k
   async changePassword(id: string, nova_sifra: string){
       await this.prisma.$queryRawUnsafe(
         "CALL promeni_sifru('" + id + "', '" + nova_sifra + "')"
-    )
-    }
+      )
+  }
 ```
 Ukoliko napadač prosledi vrednost za id "korisnik or 1=1", i unese željenu vrednost za šifru, promeniće šifru svim korisnicima u sistemu.
 
@@ -62,20 +62,18 @@ Potreba za jakom autentifikacijom je važna bez obzira na tip naloga, ali je dup
 2. Sigurnosne konfiguracije [M2] <br>
 Da bi se postigla dodatna zaštita potrebno je smanjiti površinu dobijanja pristupa nalogu. To se može postići eliminisanjem nepotrebnih resursa kao što su aplikacije koje nisu neophodne za rad SQL servera,
 preimenovanjem, onemogućavanjem i/ili brisanjem nepotrebnih naloga. Neophodno je ograničiti ko ima pristup kojim procedurama. <br>
-```
-  -- Dodela prava pristupa za izvršavanje procedure
-  GRANT EXECUTE ON PROCEDURE ime_procedure(parametri) TO ime_korisnika;
+    ```
+        -- Dodela prava pristupa za izvršavanje procedure
+        GRANT EXECUTE ON PROCEDURE ime_procedure(parametri) TO ime_korisnika;
 
-  -- Uklanjanje prava pristupa za izvršavanje procedure
-  REVOKE EXECUTE ON PROCEDURE ime_procedure(parametri) FROM ime_korisnika;
-```
-<br><br>
+        -- Uklanjanje prava pristupa za izvršavanje procedure
+        REVOKE EXECUTE ON PROCEDURE ime_procedure(parametri) FROM ime_korisnika;
+    ```
 3. Uklanjanje nepotrebnih uskladištenih procedura [M3]<br>
-Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera. 
-```
-  DROP PROCEDURE procedure_name(parameter_list);
-```
-<br><br>
+Ukoliko ne postoji neki specifičan razlog za koji nam trebaju uskladištene procedure, one se mogu u potpunosti ukloniti sa servera.
+    ```
+        DROP PROCEDURE procedure_name(parameter_list);
+    ```
 4. Parametrizovani upiti [M4]<br>
 Kada je reč o zloupotrebi uskladištenih procedura u kombinaciji sa SQL injection-om, bitno je koristiti parametrizovane upite u aplikaciji, kako bi se izbeglo direktno umetanje korisničkih podataka u upite. 
 U kontekstu Caddie enterprise sistema, sa PostgreSQL-om interaguje NodeJS aplikacija koja koristi Prisma ORM alat za interakciju sa bazama podataka.
