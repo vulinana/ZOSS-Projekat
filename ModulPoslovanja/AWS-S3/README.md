@@ -54,10 +54,27 @@ Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama z
 <br><br>
 3. Enkripcija podataka [M2] <br>
 Enkripcijom podaci postaju beskorisni napadaču jer ne može da ih pročita. Postoji nekoliko načina kako se može odraditi enkripcija kada je u pitanju AWS S3. <br><br>
-**Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i pomoću ključa koji obezbeđuje korisnik (SSE-C). <br>
+**Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i dvoslojna server-side enkripcija (DSSE-KMS). <br>
 
-    Konkretno prilikom enkripcije SSE-KMS ključem, prvo je neophodno kreirati dati ključ i odrediti koji IAM korisnici i kakve permisije imaju nad njim. Nakon toga se u samom podešavanju bucket-a (Properties) podesi da se vrši enkripcija korišćenjem SSE-KMS i izabere se ključ koji je prethodno kreiran. Ova enkripcija se vrši automatski tako da svaki put kada korisnik koji ima permisiju za enkripciju sa ovim ključem uradi upload datoteke, ona će se enkriptovati, a svaki put kada korisnik koji ima permisiju za dekripciju preuzme datoteku ona će automatski biti dekriptovana. Napadač će moći da izlista sve fajlove korišćenjem komande "aws s3 ls s3://bucket-name".Međutim, svaki korisnik koji pokuša da pristupi enkriptovanoj datoteci, a nema permisije za dekripciju postavljene u ključu korišćenom prilikom enkripcije, dobiće grešku prikazanu na Slici 1.1 <br><br>
+    Enkripcija sa sse-s3 ključem je default-no nameštena, međutim da bi se odradila neophodno je da se u zahtevu za upload datoteke naglasi da se vrši ServerSideEncryption. 
+
+     ```
+        const uploadResult = await this.s3
+            .upload({
+                Bucket: this.bucketName,
+                Body: dataBuffer,
+                Key: filename,
+                ContentDisposition: 'inline',
+                ServerSideEncryption: 'AES256' 
+            })
+            .promise()
+     ```
+    Međutim, ovaj vid enkripcije u slučaju Data Exfiltration napada nad nepravilno konfigurisanim bucket-om nema neku poentu. Dekripcija datoteka se vrši automatski za svakog ko ima pristup objektima što je u ovom slučaju i sam napadač.
+
+    Prilikom enkripcije SSE-KMS ključem, prvo je neophodno kreirati dati ključ i odrediti koji IAM korisnici i kakve permisije imaju nad njim. Nakon toga se u samom podešavanju bucket-a (Properties) podesi da se vrši enkripcija korišćenjem SSE-KMS i izabere se ključ koji je prethodno kreiran. Ova enkripcija se vrši automatski tako da svaki put kada korisnik koji ima permisiju za enkripciju sa ovim ključem uradi upload datoteke, ona će se enkriptovati, a svaki put kada korisnik koji ima permisiju za dekripciju preuzme datoteku ona će automatski biti dekriptovana. Napadač će moći da izlista sve fajlove korišćenjem komande "aws s3 ls s3://bucket-name". Međutim, svaki korisnik koji pokuša da pristupi enkriptovanoj datoteci, a nema permisije za dekripciju postavljene u ključu korišćenom prilikom enkripcije, dobiće grešku prikazanu na Slici 1.1 <br><br>
 ![Slika 1.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/error-kms-encrypted.PNG) <br>Slika 1.1<br>
+
+    DSSE-kms enkripcija predstavlja kombinaciju client-side i server-side enkripcije upotrebom kms ključa.
 
     **Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. 
 U Caddie aplikaciji moguće je korišćenje biblioteke crypto za enkripciju i dekripciju datoteka. Ovo je potrebno implementirati ručno, tako da se svaki put pre upload-a vrši enkripcija, a svaki put nakon download-a vrši dekripcija preuzete datoteke.

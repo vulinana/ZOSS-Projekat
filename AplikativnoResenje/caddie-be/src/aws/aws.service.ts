@@ -20,7 +20,9 @@ export class AwsService {
                 Bucket: this.bucketName,
                 Body: dataBuffer,
                 Key: filename,
-                ContentDisposition: 'inline'
+                ContentDisposition: 'inline',
+                //ServerSideEncryption: 'AES256',
+                //ACL: 'public-read'
             })
             .promise()
 
