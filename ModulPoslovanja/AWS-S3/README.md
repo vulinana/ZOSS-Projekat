@@ -15,7 +15,7 @@ Kao i u prethodnoj pretnji, ključni resurs koji je ugrožen jeste bucket sa svo
 
 Data exiltration [[2]](#reference), poznat kao i data extrustion, predstavlja neovlašćeni prenos ili krađu podataka koji su smešteni u S3 bucket-ovima od strane napadača. Napadač pokušava dobiti pristup osetljivim podacima koje se nalaze u bucket-ovima, pa ih preneti ili zloupotrebiti.
 
-Napadač prvo identifikuje AWS S3 bucket koji će mu potencijalno biti cilj napada. To može učiniti koristeći različite komande kao što je Google dorks za pronalaženje S3 bucket-a koji su povezani sa određenim sajtom (komanda: site:s3.amazonaws.com <site.com>). Ovo je pretraga koja se vrši putem Google pretraživača kako bi se identifikovali potencijalni ciljni bucket-i. Drugi način bi bilo korišćenje CLI alatki za enumeraciju bucket-a kao što su Slurp, Bucket_finder, S3Scanner i Cloudlist. Ove alatke pomažu u identifikaciji dostupnih bucket-a, pristupajući informacijama o njihovim konfiguracijama i sadržaju.
+Napadač prvo identifikuje AWS S3 bucket koji će mu potencijalno biti cilj napada. To može učiniti koristeći različite komande kao što je Google dorks za pronalaženje S3 bucket-a koji su povezani sa određenim sajtom (komanda: site:s3.amazonaws.com <site.com>). Ovo je pretraga koja se vrši putem Google pretraživača kako bi se identifikovali potencijalni ciljni bucket-i. Drugi način bi bilo korišćenje CLI alatki za enumeraciju bucket-a kao što su Slurp, Bucket_finder, S3Scanner i Cloudlist ili skripti kao što je AWSBucketDump. Ove alatke pomažu u identifikaciji dostupnih bucket-a, pristupajući informacijama o njihovim konfiguracijama i sadržaju.
 
 Nakon pronalska potencijalnih ciljnih bucket-a sledi analiza bezbednosnih mera kako bi se identifikovale ranjivosti kao i procena da li su podaci unutar njih vredni. Da bi se proverila konfiguracija amazon S3 bucket-a potrebno je instalirati AWSCLI. Bitno je napomenuti da AWSCLI mora biti konfigurisan dodavanjem podataka o AWS nalogu, odnosno klijentskom ID-u i tajnom ključu. Nakon toga moguće je proveriti da li postoje konfiguracije koje mogu dovesti do izvršavanja napada. Kako bi se videle dozvole koristi se sledeća komanda:
  ```
@@ -50,17 +50,17 @@ Kada je konfiguracija pristupa u pitanju, potrebno je odrediti ko ima pristup ko
 **Bucket-Level politike** - određuju koje su radnje dozvoljene ili nisu nad specifičnim bucket-om za određene korisnike. <br><br>
 **S3 Bucket ACL** - predstavlja stari način upravljanja pristupom bucket-ima. AWS preporučuje korišćenje IAM ili Bucket-Level politika, ali još uvek postoje slučajevi u kojima ACL-ovi daju veću fleksibilnost od politika. To je jedan od razloga zašto još uvek nisu zastareli niti će biti uskoro. Najznačajnija prednost jeste što se mogu dodeljivati i bucket-ima ali i samim objektima, što nije slučaj sa politikama. Znači da postoji velika fleksibilnost nad resursima jer neki objekti mogu biti javni u privatnom bucket-u kao i obrnuto. <br><br>
 Najbolja praksa, bez obzira koje se od ova tri podešavanja koristi, predstavlja primenu dozvola sa najmanjim privilegijama, što znači da korisnici dobijaju samo dozvole koje su im neophodne za obavljanje sopstvenih zadataka. Time se smanjuje površina napada.<br>
-Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama za čitanje podataka (READ)
+Kada je u pitanju Data Exfiltration najviše pažnje treba posvetiti dozvolama za čitanje podataka (READ).
 <br><br>
 3. Enkripcija podataka [M2] <br>
 Enkripcijom podaci postaju beskorisni napadaču jer ne može da ih pročita. Postoji nekoliko načina kako se može odraditi enkripcija kada je u pitanju AWS S3. <br><br>
 **Šifrovanje na strani servera** - Amazon S3 šifruje objekte pre nego što ih sačuva na diskovima u svojim centrima podataka, a zatim dešifruje objekte kada budu preuzeti. Šifrovanje se vrši uz pomoć ključa koji se ne čuva na istom mestu gde su i podaci. Amazon S3 nudi nekoliko opcija za šifrovanje na strani servera kao što su: šifrovanje pomoću Amazon S3 managed keys (SSE-S3), AWS Key Managment Service keys (SSE-KMS) i pomoću ključa koji obezbeđuje korisnik (SSE-C). <br>
 
-    Konkretno prilikom enkripcije SSE-KMS ključem, prvo je neophodno kreirati dati ključ i odrediti koji IAM korisnici i kakve permisije imaju nad njim. Nakon toga se u samom podešavanju bucket-a (Properties) podesi da se vrši enkripcija korišćenjem SSE-KMS i izabere se ključ koji je prethodno kreiran. Ova enkripcija se vrši automatski tako da svaki put kada korisnik koji ima permisiju za enkripciju sa ovim ključem uradi upload datoteke, ona će se enkriptovati, a svaki put kada korisnik koji ima permisiju za dekripciju preuzme datoteku ona će automatski biti dekriptovana. Napadač će moći da izlista sve fajlove korišćenjem komande "aws s3 ls s3://<bucket-name>".Međutim, svaki korisnik koji pokuša da pristupi enkriptovanoj datoteci, a nema permisije za dekripciju postavljene u ključu korišćenom prilikom enkripcije, dobiće grešku prikazanu na Slici 1.1 <br><br>
+    Konkretno prilikom enkripcije SSE-KMS ključem, prvo je neophodno kreirati dati ključ i odrediti koji IAM korisnici i kakve permisije imaju nad njim. Nakon toga se u samom podešavanju bucket-a (Properties) podesi da se vrši enkripcija korišćenjem SSE-KMS i izabere se ključ koji je prethodno kreiran. Ova enkripcija se vrši automatski tako da svaki put kada korisnik koji ima permisiju za enkripciju sa ovim ključem uradi upload datoteke, ona će se enkriptovati, a svaki put kada korisnik koji ima permisiju za dekripciju preuzme datoteku ona će automatski biti dekriptovana. Napadač će moći da izlista sve fajlove korišćenjem komande "aws s3 ls s3://bucket-name".Međutim, svaki korisnik koji pokuša da pristupi enkriptovanoj datoteci, a nema permisije za dekripciju postavljene u ključu korišćenom prilikom enkripcije, dobiće grešku prikazanu na Slici 1.1 <br><br>
 ![Slika 1.1](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/error-kms-encrypted.PNG) <br>Slika 1.1<br>
 
     **Šifrovanje na strani klijenta** - podrazumeva da korisnik pošalje već šifrovane podatke na Amazon S3. U ovom slučaju on upravlja procesom šifrovanja, ključevima za šifrovanje i povezanim alatima. 
-U caddie aplikaciji moguće je korišćenje biblioteke crypto za enkripciju i dekripciju datoteka. Ovo je potrebno implementirati ručno, tako da se svaki put pre upload-a vrši enkripcija, a svaki put nakon download-a vrši dekripcija preuzete datoteke.
+U Caddie aplikaciji moguće je korišćenje biblioteke crypto za enkripciju i dekripciju datoteka. Ovo je potrebno implementirati ručno, tako da se svaki put pre upload-a vrši enkripcija, a svaki put nakon download-a vrši dekripcija preuzete datoteke.
     ```
       encryptData(dataBuffer: Buffer): Buffer {
          const cipher = crypto.createCipheriv(this.algorithm, key, iv);
@@ -97,11 +97,12 @@ Sada kada napadač ima ove informacije, sledeći korak predstavlja aktivno istra
 ![Slika 2.2](https://github.com/vulinana/ZOSS-Projekat/blob/main/ModulPoslovanja/AWS-S3/Slike/bucketname.s3.amazonaws.PNG) <br>Slika 2.2<br>
 
 Još jedan način za izvođenje bucket enumeration-a bi bio upotrebom third-party alata [[7]](#reference). Postoje različiti third-party alati i skripte koje mogu automatizovati proces pronalaženja S3 bucket-a.
-Jedan od takvih alata je S3Scanner. S3Scanner je popularan alat otvorenog koda koji se koristi za identifikaciju javno dostupnih Amazon S3 bucket-a i izvlačenje interesantnih informacija iz njih. Alat se pokreće komandom sa odgovarajućim ciljnim domenom example.com:
+
+AWSBucketDump je primer python skripte koja se koristi za enumeraciju javno dostupnih bucket-a. Moguće ju je skinuti sa sledećeg github repozitorijuma "https://github.com/jordanpotti/AWSBucketDump" i instalirati korišćenjem komande "pip install -r requirements.txt". Enumeracija se vrši uz pomoć sledeće komande:
  ```
-     python s3scanner.py example.com
+     python AWSBucketDump.py -l buckets.txt
  ```
-S3Scanner će skenirati javno dostupne bucket-e i prikazati rezultate, uključujući imena bucket-a i povezane URL-ove.
+Gde je buckets.txt tekstualna datoteka koja sadrži imena bucket-a gde napadač navodi nazive bucket-a koje želi da proveri da li postoje i da li su javno dostupni. Nakon što se komanda izvrši, rezultati će biti smešteni u interesting_file.txt. 
 
 Nakon što je pronađen javno dostupan bucket, ostvarena je pretnja 'Neovlašćen pristup osetljivim podacima' [P1].
 
