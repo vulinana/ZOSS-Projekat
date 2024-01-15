@@ -219,7 +219,7 @@ Tok napada:
 
     Neizostavna mitigacija koja igra ključnu ulogu pri detekciji i samim tim odgovoru na potencijalne MitM napade.
 
-### DoS napad [N3]
+### Resource Exhaustion, Connection Saturation i JavaScript Execution [N3]
 
 Denial of Service predstavlja pretnju koja ukoliko se realizuje rezultuje onemogućavanjem normalnog funkcionisanje servera, odnosno da postaje nedostupan svojim korisnicima. Prethodno navedeno direktno narušava stavku dostupnosti u CIA trijadi. Napadač je u mogućnosti da ovo izvede na nekoliko različitih načina, gde svaki eksploatiše različit aspekt sistema baze podataka.
 
