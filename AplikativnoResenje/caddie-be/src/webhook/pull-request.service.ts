@@ -12,8 +12,9 @@ export class PullRequestService {
     private readonly pullRequestModel: Model<PullRequest>
   ) {}
 
-  async save({ number, title, body, githubId }: PrDto) {
+  async save({ number, title, body, githubId, author }: PrDto) {
     const newPr = new this.pullRequestModel({
+      author,
       number,
       title,
       body,
@@ -24,5 +25,12 @@ export class PullRequestService {
 
   findAll() {
     return this.pullRequestModel.find({});
+  }
+
+  async getAllByAuthor(author: string) {
+    const result = await this.pullRequestModel.find({
+      author
+    });
+    return result;
   }
 }
