@@ -3,4 +3,5 @@ export class PrDto {
   number: number;
   title: string;
   body: string;
+  author: string;
 }

@@ -9,8 +9,6 @@ Granice poverljivosti sistema definisane su na dijagramu 2. nivoa.
 
 [EnterpriseSistemCaddie](EnterpriseSistemCaddie/PREGLED_SISTEMA.md) - tekstualan opis sistema.
 
-[Literatura](Literatura/Literatura.md) - radovi koji treba da budu pregledani u svrhu bezbednosne analize sistema.
-
 [ModulIntegracije](ModulIntegracije/) - Modul integracije obuhvata deo sistema namenjen za integracije sa eksternim sistemima i zajedno sa svojim sistemom za upravljanje bazama podataka (MongoDB)
 
 1. [MongoDB](ModulIntegracije/MongoDB) - opis pretnji na MongoDB, napada koji ostvaraju datu pretnju i mitigacija koje sprecavaju napade i umanjuju njihove posledice.

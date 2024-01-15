@@ -3,6 +3,7 @@ import ChangePasswordComponent from "../components/ChangePasswordComponent";
 import FileUploadComponent from "../components/FileUploadComponent";
 import React from "react";
 import { PullRequestsPage } from "../components/PullRequests";
+import { PullRequestsByUsernamePage } from "../components/PullRequestsUsername";
 
 export const routes = [
   {
@@ -20,6 +21,10 @@ export const routes = [
       {
         path: "/pull-requests",
         element: <PullRequestsPage />,
+      },
+      {
+        path: "/pull-requests/:username",
+        element: <PullRequestsByUsernamePage />,
       },
     ],
   },

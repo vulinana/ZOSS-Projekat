@@ -6,6 +6,8 @@ export type PullRequestDocument = HydratedDocument<PullRequest>;
 @Schema()
 export class PullRequest {
   @Prop()
+  author: string;
+  @Prop()
   githubId: string;
   @Prop()
   number: number;
