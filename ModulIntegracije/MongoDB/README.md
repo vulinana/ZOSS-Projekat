@@ -43,24 +43,26 @@ Mongoose sam po sebi nema ugradjenu proveru za prava pristupa podacima, već je 
 
 Primer ranjive rute u Node.js koja bi mogla biti eksploatisana od strane napadača predstavljena je u narednom bloku koda:
 
-@ApiResponse({ type: [OrganizationMemberPresenter] })
-@Get('/:organizationId/member')
-@ReadOnlyPermission()
-@HttpCode(HttpStatus.OK)
-@UseGuards(
-JwtAuthGuard,
-UserVerifiedGuard,
-PermissionGuard,
-SubscriptionGuard,
-)
-async getOrganizationMembers(
-@Param('organizationId') organizationId: string,
-) {
-const users = await this.queryBus.execute(
-new GetOrganizationMembersQuery(organizationId),
-);
-return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
-}
+   ```
+   @ApiResponse({ type: [OrganizationMemberPresenter] })
+   @Get('/:organizationId/member')
+   @ReadOnlyPermission()
+   @HttpCode(HttpStatus.OK)
+   @UseGuards(
+   JwtAuthGuard,
+   UserVerifiedGuard,
+   PermissionGuard,
+   SubscriptionGuard,
+   )
+   async getOrganizationMembers(
+   @Param('organizationId') organizationId: string,
+   ) {
+   const users = await this.queryBus.execute(
+   new GetOrganizationMembersQuery(organizationId),
+   );
+   return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
+   }
+   ```
 
 U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pristupa korisnika koji bi poslao zahtev na priloženu rutu. Ovo bi napadač mogao lako iskoristiti kao slabost i izvšiti IDOR napad pogodivši identifikator organizacije i na taj način pribaviti podatke za koje nije autorizovan. Iako je u navedenom primeru prikazan read tip IDOR napada, odnosno tip gde napadač vrši napad radi čitanja podataka, važno je napomenuti da postoji i write IDOR, gde je cilj napadača da manipuliše write operacijama nad određenim resursom nad kojim ima neovlašćen pristup. To bi uključivalo rute sa metodama PUT, POST, DELETE itd.
 
@@ -70,6 +72,7 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
 
    Koristiti RBAC (Role based access control) mehanizam da bi se osigiralo da korisnik može samo da pristupi podacima i vrši operacije nad istim koje su relevante za njegovu ulogu. Način kako bi se prethodni primer koji je podložan IDOR napadu mogao unaprediti da napadač ne može da pristupi u ovom slučaju podacima o članovima organizacije bila bi implementacija dodatnog guard-a koji bi vršio proveru da li korisnik koji je poslao zahtev jeste član organizacije kojoj želi da pristupi i da li možda čak ima i odgovarajuću ulogu u sistemu za tako nešto. Jedna od implementacija bezbednog endpointa mogla bi da izgleda sledeće:
 
+   ```
    @ApiResponse({ type: [OrganizationMemberPresenter] })
    @Get('/:organizationId/member')
    @ReadOnlyPermission()
@@ -95,6 +98,7 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
    );
    return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
    }
+   ```
 
    Kao što je prikazano, pre izvršavanja same logike, vrši se provera da li je korisnik član organizacije. U slučaju da napadač dodje do postojećeg identifikatora organizacije, to neće biti dovoljno kako bi pribavio podatke o njenim korisnicima, jer on sam nije deo nje te mu pristup nije odobren. Na ovaj način povećana je bezbednost prikazanog endpoint-a, a samim tim i smanjen rizik od IDOR napada.
 
@@ -102,6 +106,7 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
 
    Mongoose biblioteka nudi određen set ugrađenih hook-ova (često nazivanih i middleware-ima) koji se okidaju pre ili posle odredjenih akcija (pre i post hooks). Bitno je istaći da se hook-ovi implementiraju na nivou šeme. Česte akcije jesu save, remove i validate. Jedna od glavnih namena ovih hook-ova jeste rukovanje kontrolom pristupa. Iz navedenog da se primetiti da u slučaju smanjenja rizika od write IDOR napada od koristi mogu biti pre-hook-ovi Mongoose biblioteke. Jedan ilustrativan primer bio bi da napadač pokušava da izvrši write IDOR napad kako bi izbrisao određenog korisnika iz neke organizacije. U slučaju dobavljanja odgovarajućih identifikatora, logika remove pre-hook-a koja ne bi dozvolila neautorizovano izvršavanje ove akcije mogla bi da izgleda sledeće:
 
+   ```
    OrganizationMemberSchema.pre('remove', async function(next) {
    const member = this;
    const currentUser = member.\_currentUser;
@@ -118,6 +123,7 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
 
    next();
    });
+   ```
 
 3. Indirektne reference objekta [M3]
 
@@ -151,9 +157,9 @@ Tok napada:
 
     - Dobavljanje TLS sertifikata
 
-          Pod ovim korakom mogu se razmotriti dva slučaja: self-signed sertifikati i sertifikati izdati od validnog CA (Certifikate authority). Dobra praksa je da se u produkciji koriste validni sertifikati izdati od validnih tela. Iako se i u produkciji mogu koristiti self-signed sertifikati, ovaj tip je podložan MitM napadu koji se ovde želi izbeći, te stoga taj slučaj neće biti detaljnije razradjen.
+       Pod ovim korakom mogu se razmotriti dva slučaja: self-signed sertifikati i sertifikati izdati od validnog CA (Certifikate authority). Dobra praksa je da se u produkciji koriste validni sertifikati izdati od validnih tela. Iako se i u produkciji mogu koristiti self-signed sertifikati, ovaj tip je podložan MitM napadu koji se ovde želi izbeći, te stoga taj slučaj neće biti detaljnije razradjen.
 
-          Prvi korak predstavlja generisanje CSR (Certificate Signing Request). Ovo je moguće izvesti upotrebom nekog od alata, na primer OpenSSL. Putem OpenSSL komandi generisaće se par ključeva (javni i privatni) i CSR. Pri generisanju ključeva neophodno je specificirati algoritam za enkripciju koji će biti korišćen pri generisanju, kao i veličinu ključa. Primer kako bi komanda mogla da izgleda je sledeći:
+      Prvi korak predstavlja generisanje CSR (Certificate Signing Request). Ovo je moguće izvesti upotrebom nekog od alata, na primer OpenSSL. Putem OpenSSL komandi generisaće se par ključeva (javni i privatni) i CSR. Pri generisanju ključeva neophodno je specificirati algoritam za enkripciju koji će biti korišćen pri generisanju, kao i veličinu ključa. Primer kako bi komanda mogla da izgleda je sledeći:
 
           OpenSSL genrsa -out yourprivatekeyname.key 2048
 
@@ -177,16 +183,19 @@ Tok napada:
 
           City, State/Province i Country: Za svaki od ovih podataka je potrebno uneti informacije vezane za organizaciju.
 
-          Ovo je moguće učiniti i korišćenjem i samo jedne komande u OpenSSL, odnosno prethodno prikazane komande koja bi bila upotpunjena neophodnim informacijama. Primer kako bi takva komanda izgledala je:
+      Ovo je moguće učiniti i korišćenjem i samo jedne komande u OpenSSL, odnosno prethodno prikazane komande koja bi bila upotpunjena neophodnim informacijama. Primer kako bi takva komanda izgledala je:
 
+   ```
       Openssl req -new -newkey rsa:2048 -nodes -out www_codesigningstore_com_csr.txt -keyout www_codesigningstore_com.key -subj “/C=US/ST=Florida/L=St.Petersburg/O=Rapid Web Services, LLC/CN=www.codesigningstore.com”
+   ```
 
-      Nakon izvršenih prethodnih koraka, preostaje još slanje CSR informacija sertifikovanom telu (CA). Potom to sertifikaciono telo koristi te priložene podatke kako bi ih validiralo i izdalo sertifikat koji će biti korišćen u sistemu za obezbedjivanje konekcije izmedju Node.js aplikacije i MongoDB baze podataka.
+   Nakon izvršenih prethodnih koraka, preostaje još slanje CSR informacija sertifikovanom telu (CA). Potom to sertifikaciono telo koristi te priložene podatke kako bi ih validiralo i izdalo sertifikat koji će biti korišćen u sistemu za obezbedjivanje konekcije izmedju Node.js aplikacije i MongoDB baze podataka.
 
-    - Podešavanje TLS u Mongoose konekciji
+   - Podešavanje TLS u Mongoose konekciji
 
-          Pre samog podešavanja TLS, neophodno je pribaviti konekcioni URI. On najčešće počinje sa 'mongodb+srv://'. Upravo ovaj format 'mongodb+srv://' indicira da će se konekcija osigurati putem TLS-a. Primer kako bi u kodu izgledala konfiguracija TLS za Mongoose je sledeća:
-
+     Pre samog podešavanja TLS, neophodno je pribaviti konekcioni URI. On najčešće počinje sa 'mongodb+srv://'. Upravo ovaj format 'mongodb+srv://' indicira da će se konekcija osigurati putem TLS-a. Primer kako bi u kodu izgledala konfiguracija TLS za Mongoose je sledeća:
+        
+      ```
           const mongoose = require('mongoose');
           const mongoDBUri = 'mongodb+srv://yourusername:yourpassword@yourcluster.yourprovider.com/yourdbname';
 
@@ -195,6 +204,7 @@ Tok napada:
              useUnifiedTopology: true,
              ssl: true
           });
+      ```
 
 2.  Validacija sertifikata
 
@@ -224,12 +234,15 @@ Denial of Service predstavlja pretnju koja ukoliko se realizuje rezultuje onemog
 
    Posmatrajući sistem koji se analizira i uzevši u obzir da je u pitanju Node.js aplikacija koja ostvaruje komunikaciju sa MongoDB bazom podataka posredstvom Mongoose biblioteke, važno je istaći relevantne informacije za ove tehnologije. Prilikom otvaranja konekcije sa MongoDB putem Mongoose, stvara se takozvani pool konekcija (tačan broj konekcija može biti eksplicitno konfugurisan). Connection pooling mehanizam pruža veću efikasnost, obzirom da održava konekcije aktivne i iznova ih koristi uzimajući konekciju iz pool-a kada je potrebna za izvršavanje operacije i nakon završetka iste vraća se u pool, umesto otvaranja i zatvaranja konekcije pri svakoj operaciji. Sledi primer kako maksimalan broj konekcija, kao i maksimalno vreme koje konekcija provodi neaktivna (idle time) može biti podešeno koristeći Mongoose i atribut poolSize i socketTimeoutMS:
 
+   ```
+
    mongoose.connect(uri, {
    useNewUrlParser: true,
    useUnifiedTopology: true,
    poolSize: 10, // maksimalan broj konekcija je u ovom primeru 10
    socketTimeoutMS: 30000 //definisano u milisekundama, dakle max idle time po konekciji je 30s
    });
+   ```
 
    Specifičan tip connection saturation napada bio bi Slowloris napad. Važno je napomenuti da ovaj napad ne targetira bazu direktno, već aplikativni sloj. Razlikuje se od standardnog saturation attack napada po tome što umesto pokušaja da preoptereti server sa velikim brojem zahteva u kratkom vremenskom roku, Slowloris se fokusira na otvaranje konekcija i održavanjem ih aktivnih koliko god je moguće dugo. Ovaj napad bazira se na slanju zahteva koji su sporiji nego obični imitirajući redovni saobraćaj. Kao što je prethodno navedeno, server ima odredjen broj konekcija dostupan, gde svaka od njih ostaje 'živa' pokušavajući da završi spori zahtev, što se nikad neće dogoditi u slučaju Slowloris napada. Kada se dostigne maksimalan broj konekcija koje server može da podrži, svaka dodatna konekcija neće biti realizovana te dolazi do ostvaranja Denial of Service pretnje.
 
@@ -243,7 +256,7 @@ Denial of Service predstavlja pretnju koja ukoliko se realizuje rezultuje onemog
 
    4. Rezultat prethodnog koraka jeste da server nikad ne može da oslobodi ove postojeće konekcije, jer ne dolazi do isteka definisanog vremena u stanju neaktivnosti niti se zahtev ikada završava. Jednom kad su sve konekcije zauzete, server neće biti u mogućnosti da odgovori na nove zahteve koji pristižu od legitimnih korisnika, rezultujući ostvarenom DoS pretnjom.
 
-3. JavaScript Execution
+4. JavaScript Execution
 
    MongoDB dozvoljava izvršavanje Javascript izraza ili funkcije za odredjene operacije, od kojih je jedna $where operator. Ukoliko se korisnički unos ne validira ili ne sanitizuje, moguće je da dodje do injektovanja malicioznog JavaScript koda koji bi izvršavao resursno zahtevne operacije, dovodeći do neresponzivnosti servera ili njegovog potpunog pada.
 
