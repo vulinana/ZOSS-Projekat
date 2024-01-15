@@ -17,11 +17,12 @@ export class AwsController {
         try {
             //const uploadResult = await this.awsService.uploadEncryptedFile(file.buffer, file.originalname);
             const uploadResult = await this.awsService.uploadPublicFile(file.buffer, file.originalname);
+            if (uploadResult == undefined) return response.status(500).json('Failed to upload file');
             return response.status(200).json(uploadResult)
         } catch (error) {
             return response
-            .status(5000)
-            .json('Failed to upload image file:' + error.message);
+            .status(500)
+            .json('Failed to upload file:' + error.message);
         }
     }
 
@@ -32,7 +33,7 @@ export class AwsController {
 
     @Get(':id')
     async getFileById(@Param('id') id: string): Promise<any> {
-       // return this.awsService.getDecryptedFileById(id);
+       //return this.awsService.getDecryptedFileById(id);
        return this.awsService.getFileById(id);
     }
 }
