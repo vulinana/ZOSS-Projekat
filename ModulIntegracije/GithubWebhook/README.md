@@ -51,44 +51,44 @@ Fake webhook request attack je napad vezan za sisteme koji vrše integraciju sa 
    - X-GitHub-Hook-Installation-Target-ID: Jedinstveni identifikator resursa gde je webhook kreiran.
 
    Primer kako bi izgledao Webhook POST zahtev uzevši u obzir sve prethodno navedeno:
+   ```
+    POST /payload HTTP/2
 
-   > POST /payload HTTP/2
+    X-GitHub-Delivery: 72d3162e-cc78-11e3-81ab-4c9367dc0958
+    X-Hub-Signature: sha1=7d38cdd689735b008b3c702edd92eea23791c5f6
+    X-Hub-Signature-256: sha256=d57c68ca6f92289e6987922ff26938930f6e66a2d161ef06abdf1859230aa23c
+    User-Agent: GitHub-Hookshot/044aadd
+    Content-Type: application/json
+    Content-Length: 6615
+    X-GitHub-Event: issues
+    X-GitHub-Hook-ID: 292430182
+    X-GitHub-Hook-Installation-Target-ID: 79929171
+    X-GitHub-Hook-Installation-Target-Type: repository
 
-   > X-GitHub-Delivery: 72d3162e-cc78-11e3-81ab-4c9367dc0958
-   > X-Hub-Signature: sha1=7d38cdd689735b008b3c702edd92eea23791c5f6
-   > X-Hub-Signature-256: sha256=d57c68ca6f92289e6987922ff26938930f6e66a2d161ef06abdf1859230aa23c
-   > User-Agent: GitHub-Hookshot/044aadd
-   > Content-Type: application/json
-   > Content-Length: 6615
-   > X-GitHub-Event: issues
-   > X-GitHub-Hook-ID: 292430182
-   > X-GitHub-Hook-Installation-Target-ID: 79929171
-   > X-GitHub-Hook-Installation-Target-Type: repository
-
-   > {
-   > "action": "opened",
-   > "issue": {
-   > "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
-   > "number": 1347,
-   > ...
-   > },
-   > "repository" : {
-   > "id": 1296269,
-   > "full_name": "octocat/Hello-World",
-   > "owner": {
-   > "login": "octocat",
-   > "id": 1,
-   > ...
-   > },
-   > ...
-   > },
-   > "sender": {
-   > "login": "octocat",
-   > "id": 1,
-   > ...
-   > }
-   > }
-
+    {
+    "action": "opened",
+    "issue": {
+    "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+    "number": 1347,
+    ...
+    },
+    "repository" : {
+    "id": 1296269,
+    "full_name": "octocat/Hello-World",
+    "owner": {
+    "login": "octocat",
+    "id": 1,
+    ...
+    },
+    ...
+    },
+    "sender": {
+    "login": "octocat",
+    "id": 1,
+    ...
+    }
+   }
+   ```
    Uzevši u obzir sve prethodno navedeno, cilj napadača može biti slanje lažnih Github webhook zahteva bez malicioznih Javascript injektovanih kodova, obzirom na analizirani sistem (prikaz statistike aktivnosti članova u organizaciji). Obradom lažnog zahteva, podaci koje bi analizirani sistem prikazivao ne bi bile tačne, pa bi samim tim integritet podataka bio narušen, potencijalno zajedno sa poverenjem korisnika sistema. Ovo bi moglo predstavljati 'blaži' vid napada koji bi mogao biti izvršen, medjutim postoji šansa da napadač ima veći cilj od ovoga. Na primer, injektovanjem malicioznog Javascript koda umesto vrednosti odredjenog polja u telu zahteva, a ukoliko se ne vrši sanitizacija podataka u sistemu, može izazvati razne neželjene efekte, od kradje podataka do neplaniranog ponašanja sistema.
 
 #### Mitigacije
@@ -96,38 +96,38 @@ Fake webhook request attack je napad vezan za sisteme koji vrše integraciju sa 
 1. Validacija payload-a [M1]
 
    Github potpisuje svoje zahteve sa secret-om koji se čuva u eksternom sistemu. Dakle, Github koristi taj secret kako bi kreirao hash potpis payload-a, koji se šalje u X-Hub-Signature header-u. Kada na eksterni sistem pristigne zahtev potrebno je da sistem validira zahtev koristeći taj secret. Sistem preračunava hash payload-a pristiglog zahteva koristeći istu metodu kao i Github (to je uglavnom SHA256). Nakon što izračuna hash, dovoljno je da ga uporedi sa hash-om koji je pristigao u X-Hub-Signature header-u zahteva. Ukoliko se hash-evi podudaraju može se zaključiti da se zahtev zaista poslat od Githuba i preći na obradu istog. Naravno, ukoliko se hash-evi ne podudaraju zahtev ili nije poslat od strane Github-a ili je zahtev u toku transporta menjan, te će zahtev biti odbijen od strane servera. Primer kako bi mogla da izgleda validacija pristiglog webhook zahteva u express.js:
+   ```
+    app.post('/webhook', (req, res) => {
+    const signature = req.headers['X-Hub-Signature'];
 
-   > app.post('/webhook', (req, res) => {
-   > const signature = req.headers['X-Hub-Signature'];
+    if (!signature) {
+    return res.status(403).send('No signature');
+    }
 
-   > if (!signature) {
-   > return res.status(403).send('No signature');
-   > }
+    const event = req.headers['X-GitHub-Event'];
+    const delivery = req.headers['X-Github-Delivery'];
 
-   > const event = req.headers['X-GitHub-Event'];
-   > const delivery = req.headers['X-Github-Delivery'];
+    const payload = JSON.stringify(req.body);
+    if (!payload) {
+    return res.status(400).send('Request body empty');
+    }
 
-   > const payload = JSON.stringify(req.body);
-   > if (!payload) {
-   > return res.status(400).send('Request body empty');
-   > }
+    // Validacija potpisa uz pomoć uskladištenog github secret-a
+    const expectedSignature = `sha1=` +
+    crypto.createHmac('sha1', GITHUB_SECRET)
+    .update(payload)
+    .digest('hex');
 
-   > // Validacija potpisa uz pomoć uskladištenog github secret-a
-   > const expectedSignature = `sha1=` +
-   > crypto.createHmac('sha1', GITHUB_SECRET)
-   > .update(payload)
-   > .digest('hex');
+    if (signature !== expectedSignature) {
+    return res.status(401).send('Invalid signature');
+    }
 
-   > if (signature !== expectedSignature) {
-   > return res.status(401).send('Invalid signature');
-   > }
+    // Procesiranje github dogadjaja ukoliko je potpis validan
+    ...
 
-   > // Procesiranje github dogadjaja ukoliko je potpis validan
-   > ...
-
-   > res.status(200).send('Request received');
-   > });
-
+    res.status(200).send('Request received');
+    });
+   ```
 2. Povećanje sigurnosti endpointa [M2]
 
    Ukoliko je moguće, dobra je praksa limitirati ko ima pristup odredjenom endpointu, gde bi u ovom slučaju to predstavljao endpoint za Github webhook. Takodje, monitoring neobičnih zahteva bi mogao predstavljati pomoć u identifikovanju lažnih zahteva.
@@ -171,7 +171,7 @@ Maliciozni kod ubačen prvo u repozitorijum, putem webhook zahteva završava i u
 4. Sanitizacija [M4]
 
    Prethodno navedeni primer za injektovanje malicioznog URL može se izbeći sanitizacijom commit poruka pristiglih u webhook zahtevu. Jedan od načina na koje je ovo moguće izvesti jeste upotrebom Regex izraza. Primer kako bi se navedena sanitizacija mogla izvesti je sledeći:
-
+   ```
    function sanitizeCommitMessage(commitMessage) {
    // Regex izraz koji proverava da li commit poruka sadrži link
    const urlRegex = /https?:\/\/[^\s]+/g;
@@ -192,6 +192,7 @@ Maliciozni kod ubačen prvo u repozitorijum, putem webhook zahteva završava i u
 
    res.status(200).send('Webhook processed');
    });
+   ```
 
 ### 3. Replay Tampering [N3]
 
@@ -206,7 +207,7 @@ Nakon sto je zahtev uspešno presretnut od strane napadača, on je u stanju da i
 1.  Implementacija timestamp-a [M1]
 
     Uključivanjem timestamp-a u payload poslatog zahteva, a potom i uvodjenje vremenskog praga koji bi specificirao da zahtevi stariji od navedenog praga nece biti prihvaćeni značajno bi smanjili mogućnost za izvodjenje replay napada. Ograničenje u pogledu korištenih tehnologije jeste to da Github ne pruža mogućnost da se timestamp vrednost direktno uključi u payload zahteva. Ovo bi se moglo rešiti korištenjem proxy-ja koji bi presretao zahtev poslat od Github-a i postavljao vrednost timestamp-a u payload zahteva. Primer kako bi izgledala validacija timestamp-a pristiglog Github webhook zahteva u Express.js:
-
+   ```
     app.post('/webhook', (req, res) => {
     const receivedTime = Date.now();
     const maxDelay = 300000; // 5 minuta postavljeno kao vremenski prag
@@ -221,11 +222,13 @@ Nakon sto je zahtev uspešno presretnut od strane napadača, on je u stanju da i
         res.status(200).send('Webhook processed');
 
     });
+   ```
 
 2.  Korišćenje nonce-a [M2]
 
     Nonce (number used once) predstavlja jedinstveni broj koji se može slati u payload-u ili posebnom header-u zahteva. Neophodno je da na strani sistema koji je integrisan sa GitHubom postoji baza podataka u kojoj bi se skladištile sve vrednosti nonce-a pristigle u zahtevima. Validacija bi uključivala proveru nonce vrednosti pristiglog zahteva sa vrednostima u bazi podataka. Ukoliko se vrednost ne poklapa ni sa jednom postojećom, zaključuje se da je zahtev validan, u suprotnom može se pretpostaviti da se radi o ponovljenom zahtevu. U slučaju integracije sistema sa Github-om, kao nonce vrednost mogla bi se koristiti i vrednost X-Hub-Signature zaglavlja, koje je takodje jedinstveno za svaki zahtev. Naravno, kao što je već spomenuto, sa strane servera bilo bi neophodno skladištenje X-Hub-Signature vrednosti od pristiglih zahteva u bazu podataka kako bi validacija bila moguća za sprovesti. Primer kako bi validacija mogla izgledala u analiziranom sistemu je sledeći:
 
+   ```
     @Post()
     async handleWebhook(@Req() req: Request, @Res() res: Response) {
     const signature = req.headers['x-hub-signature-256'] as string;
@@ -248,6 +251,7 @@ Nakon sto je zahtev uspešno presretnut od strane napadača, on je u stanju da i
          return res.status(HttpStatus.OK).send('Webhook processed');
 
     }
+   ```
 
 3.  HTTPS komunikacija [M3]
 
