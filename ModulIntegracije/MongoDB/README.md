@@ -13,7 +13,8 @@ Neke od postojećih pretnji vezanih za MongoDB su sledeće:
 
    Navedena pretnja direktno krši stavku dostupnosti (Availability) u CIA trijadi. Ova stavka garantuje da su podaci i resursi uvek dostupni autorizovanom korisniku kada god mu zatrebaju. Dostupnost podataka konstantno je ugrožena kako od strane napadača, tako i od tehničkih problema koji mogu nastati pri održavanju sistema. Manjak dostupnosti sistema može negativno uticati na korisničko iskustvo, dovodeći do nezadovoljstva pri korišćenju sistema.
 
-![image](https://github.com/vulinana/ZOSS-Projekat/assets/88163410/7a81f573-7c15-4030-b3ba-374e6ff81847)
+![image](https://github.com/vulinana/ZOSS-Projekat/assets/88163410/83429032-61e8-4ad3-9b8d-91fe953e77da)
+
 
 ## Napadi
 
