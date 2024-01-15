@@ -67,27 +67,27 @@ Fake webhook request attack je napad vezan za sisteme koji vrše integraciju sa 
     X-GitHub-Hook-Installation-Target-Type: repository
 
     {
-    "action": "opened",
-    "issue": {
-    "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
-    "number": 1347,
-    ...
-    },
-    "repository" : {
-    "id": 1296269,
-    "full_name": "octocat/Hello-World",
-    "owner": {
-    "login": "octocat",
-    "id": 1,
-    ...
-    },
-    ...
-    },
-    "sender": {
-    "login": "octocat",
-    "id": 1,
-    ...
-    }
+       "action": "opened",
+       "issue": {
+       "url": "https://api.github.com/repos/octocat/Hello-World/issues/1347",
+       "number": 1347,
+       ...
+       },
+       "repository" : {
+       "id": 1296269,
+       "full_name": "octocat/Hello-World",
+       "owner": {
+       "login": "octocat",
+       "id": 1,
+       ...
+       },
+       ...
+       },
+       "sender": {
+       "login": "octocat",
+       "id": 1,
+       ...
+       }
    }
    ```
    Uzevši u obzir sve prethodno navedeno, cilj napadača može biti slanje lažnih Github webhook zahteva bez malicioznih Javascript injektovanih kodova, obzirom na analizirani sistem (prikaz statistike aktivnosti članova u organizaciji). Obradom lažnog zahteva, podaci koje bi analizirani sistem prikazivao ne bi bile tačne, pa bi samim tim integritet podataka bio narušen, potencijalno zajedno sa poverenjem korisnika sistema. Ovo bi moglo predstavljati 'blaži' vid napada koji bi mogao biti izvršen, medjutim postoji šansa da napadač ima veći cilj od ovoga. Na primer, injektovanjem malicioznog Javascript koda umesto vrednosti odredjenog polja u telu zahteva, a ukoliko se ne vrši sanitizacija podataka u sistemu, može izazvati razne neželjene efekte, od kradje podataka do neplaniranog ponašanja sistema.
@@ -99,34 +99,34 @@ Fake webhook request attack je napad vezan za sisteme koji vrše integraciju sa 
    Github potpisuje svoje zahteve sa secret-om koji se čuva u eksternom sistemu. Dakle, Github koristi taj secret kako bi kreirao hash potpis payload-a, koji se šalje u X-Hub-Signature header-u. Kada na eksterni sistem pristigne zahtev potrebno je da sistem validira zahtev koristeći taj secret. Sistem preračunava hash payload-a pristiglog zahteva koristeći istu metodu kao i Github (to je uglavnom SHA256). Nakon što izračuna hash, dovoljno je da ga uporedi sa hash-om koji je pristigao u X-Hub-Signature header-u zahteva. Ukoliko se hash-evi podudaraju može se zaključiti da se zahtev zaista poslat od Githuba i preći na obradu istog. Naravno, ukoliko se hash-evi ne podudaraju zahtev ili nije poslat od strane Github-a ili je zahtev u toku transporta menjan, te će zahtev biti odbijen od strane servera. Primer kako bi mogla da izgleda validacija pristiglog webhook zahteva u express.js:
    ```
     app.post('/webhook', (req, res) => {
-    const signature = req.headers['X-Hub-Signature'];
-
-    if (!signature) {
-    return res.status(403).send('No signature');
-    }
-
-    const event = req.headers['X-GitHub-Event'];
-    const delivery = req.headers['X-Github-Delivery'];
-
-    const payload = JSON.stringify(req.body);
-    if (!payload) {
-    return res.status(400).send('Request body empty');
-    }
-
-    // Validacija potpisa uz pomoć uskladištenog github secret-a
-    const expectedSignature = `sha1=` +
-    crypto.createHmac('sha1', GITHUB_SECRET)
-    .update(payload)
-    .digest('hex');
-
-    if (signature !== expectedSignature) {
-    return res.status(401).send('Invalid signature');
-    }
-
-    // Procesiranje github dogadjaja ukoliko je potpis validan
-    ...
-
-    res.status(200).send('Request received');
+       const signature = req.headers['X-Hub-Signature'];
+   
+       if (!signature) {
+          return res.status(403).send('No signature');
+       }
+   
+       const event = req.headers['X-GitHub-Event'];
+       const delivery = req.headers['X-Github-Delivery'];
+   
+       const payload = JSON.stringify(req.body);
+       if (!payload) {
+          return res.status(400).send('Request body empty');
+       }
+   
+       // Validacija potpisa uz pomoć uskladištenog github secret-a
+       const expectedSignature = `sha1=` +
+       crypto.createHmac('sha1', GITHUB_SECRET)
+       .update(payload)
+       .digest('hex');
+   
+       if (signature !== expectedSignature) {
+          return res.status(401).send('Invalid signature');
+       }
+   
+       // Procesiranje github dogadjaja ukoliko je potpis validan
+       ...
+   
+       res.status(200).send('Request received');
     });
    ```
 2. Povećanje sigurnosti endpointa [M2]
@@ -174,24 +174,23 @@ Maliciozni kod ubačen prvo u repozitorijum, putem webhook zahteva završava i u
    Prethodno navedeni primer za injektovanje malicioznog URL može se izbeći sanitizacijom commit poruka pristiglih u webhook zahtevu. Jedan od načina na koje je ovo moguće izvesti jeste upotrebom Regex izraza. Primer kako bi se navedena sanitizacija mogla izvesti je sledeći:
    ```
    function sanitizeCommitMessage(commitMessage) {
-   // Regex izraz koji proverava da li commit poruka sadrži link
-   const urlRegex = /https?:\/\/[^\s]+/g;
-
-   // Menja sadržaj url-a sa praznim karakterom
-   return commitMessage.replace(urlRegex, '');
+      // Regex izraz koji proverava da li commit poruka sadrži link
+      const urlRegex = /https?:\/\/[^\s]+/g;
+   
+      // Menja sadržaj url-a sa praznim karakterom
+      return commitMessage.replace(urlRegex, '');
    }
-
+   
    app.post('/webhook', (req, res) => {
-   if (req.body.commits && req.body.commits.length > 0) {
-   req.body.commits.forEach(commit => {
-   // Sanitizacija svake commit poruke u zahtevu
-   commit.message = sanitizeCommitMessage(commit.message);
-   });
-
-   ...
-   }
-
-   res.status(200).send('Webhook processed');
+      if (req.body.commits && req.body.commits.length > 0) {
+         req.body.commits.forEach(commit => {
+         // Sanitizacija svake commit poruke u zahtevu
+         commit.message = sanitizeCommitMessage(commit.message);
+         });
+      ...
+      }
+   
+      res.status(200).send('Webhook processed');
    });
    ```
 
@@ -210,8 +209,8 @@ Nakon sto je zahtev uspešno presretnut od strane napadača, on je u stanju da i
     Uključivanjem timestamp-a u payload poslatog zahteva, a potom i uvodjenje vremenskog praga koji bi specificirao da zahtevi stariji od navedenog praga nece biti prihvaćeni značajno bi smanjili mogućnost za izvodjenje replay napada. Ograničenje u pogledu korištenih tehnologije jeste to da Github ne pruža mogućnost da se timestamp vrednost direktno uključi u payload zahteva. Ovo bi se moglo rešiti korištenjem proxy-ja koji bi presretao zahtev poslat od Github-a i postavljao vrednost timestamp-a u payload zahteva. Primer kako bi izgledala validacija timestamp-a pristiglog Github webhook zahteva u Express.js:
    ```
     app.post('/webhook', (req, res) => {
-    const receivedTime = Date.now();
-    const maxDelay = 300000; // 5 minuta postavljeno kao vremenski prag
+       const receivedTime = Date.now();
+       const maxDelay = 300000; // 5 minuta postavljeno kao vremenski prag
 
         // Check the time difference
         if (receivedTime - req.body.receivedTime > maxDelay) {
@@ -232,16 +231,16 @@ Nakon sto je zahtev uspešno presretnut od strane napadača, on je u stanju da i
    ```
     @Post()
     async handleWebhook(@Req() req: Request, @Res() res: Response) {
-    const signature = req.headers['x-hub-signature-256'] as string;
+          const signature = req.headers['x-hub-signature-256'] as string;
 
          if (!signature) {
-         return res.status(HttpStatus.BAD_REQUEST).send('No signature provided');
+            return res.status(HttpStatus.BAD_REQUEST).send('No signature provided');
          }
 
          // Provera da li u bazi podataka već postoji vrednost X-Hub-Signature
          const exists = await this.dbService.checkSignature(signature);
          if (exists) {
-         return res.status(HttpStatus.FORBIDDEN).send('Signature has already been used');
+            return res.status(HttpStatus.FORBIDDEN).send('Signature has already been used');
          }
 
          // Ukoliko je vrednost validna, skladišti se u bazi podataka
