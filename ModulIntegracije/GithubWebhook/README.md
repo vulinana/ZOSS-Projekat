@@ -12,7 +12,8 @@ Neke od postojećih pretnji vezane za sistem integrisan sa GitHub-om:
 
    Dostupnost sistema jedan je od principa CIA trijade koji garantuje da je sistem uvek dostupan korisniku kada mu je potreban. Nivo nedostupnosti sistema koji se toleriše je varijabilan u odnosu na kritičnost sistema. U analiziranom slučaju, replay napad može direktno da ugrozi dostupnost sistema.
 
-![image](https://github.com/vulinana/ZOSS-Projekat/assets/88163410/8448f0d1-62da-45b6-80df-15cd10156c25)
+![image](https://github.com/vulinana/ZOSS-Projekat/assets/88163410/e6d57bf3-a111-4cdc-b714-02428cfb599a)
+
 
 ## Napadi
 
