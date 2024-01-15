@@ -50,18 +50,18 @@ Primer ranjive rute u Node.js koja bi mogla biti eksploatisana od strane napada�
    @ReadOnlyPermission()
    @HttpCode(HttpStatus.OK)
    @UseGuards(
-   JwtAuthGuard,
-   UserVerifiedGuard,
-   PermissionGuard,
-   SubscriptionGuard,
+      JwtAuthGuard,
+      UserVerifiedGuard,
+      PermissionGuard,
+      SubscriptionGuard,
    )
    async getOrganizationMembers(
    @Param('organizationId') organizationId: string,
    ) {
-   const users = await this.queryBus.execute(
-   new GetOrganizationMembersQuery(organizationId),
-   );
-   return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
+      const users = await this.queryBus.execute(
+         new GetOrganizationMembersQuery(organizationId),
+      );
+      return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
    }
    ```
 
@@ -79,25 +79,25 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
    @ReadOnlyPermission()
    @HttpCode(HttpStatus.OK)
    @UseGuards(
-   JwtAuthGuard,
-   UserVerifiedGuard,
-   PermissionGuard,
-   SubscriptionGuard,
+      JwtAuthGuard,
+      UserVerifiedGuard,
+      PermissionGuard,
+      SubscriptionGuard,
    )
    async getOrganizationMembers(
-   @Req() req: any,
-   @Param('organizationId') organizationId: string,
+      @Req() req: any,
+      @Param('organizationId') organizationId: string,
    ) {
-   const isMember = await this.organizationService.isUserMemberOfOrganization(req.user.id, organizationId);
+      const isMember = await this.organizationService.isUserMemberOfOrganization(req.user.id, organizationId);
 
-   if (!isMember) {
-   throw new ForbiddenException('User is not a member of this organization.');
-   }
+      if (!isMember) {
+         throw new ForbiddenException('User is not a member of this organization.');
+      }
 
-   const users = await this.queryBus.execute(
-   new GetOrganizationMembersQuery(organizationId),
-   );
-   return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
+      const users = await this.queryBus.execute(
+         new GetOrganizationMembersQuery(organizationId),
+      );
+      return users.map((user) => new OrganizationMemberPopulatedPresenter(user));
    }
    ```
 
@@ -109,20 +109,20 @@ U navedenom primeru moguće je uočiti da ne postoji zaštita i provera prava pr
 
    ```
    OrganizationMemberSchema.pre('remove', async function(next) {
-   const member = this;
-   const currentUser = member.\_currentUser;
-
-   if (!currentUser) {
-   return next(new Error('Current user context is not available.'));
-   }
-
-   const isAuthorized = await checkUserAuthorization(currentUser, member.organizationId);
-
-   if (!isAuthorized) {
-   return next(new Error('User is not authorized to delete this organization member.'));
-   }
-
-   next();
+      const member = this;
+      const currentUser = member.\_currentUser;
+   
+      if (!currentUser) {
+         return next(new Error('Current user context is not available.'));
+      }
+   
+      const isAuthorized = await checkUserAuthorization(currentUser, member.organizationId);
+   
+      if (!isAuthorized) {
+         return next(new Error('User is not authorized to delete this organization member.'));
+      }
+   
+      next();
    });
    ```
 
@@ -238,10 +238,10 @@ Denial of Service predstavlja pretnju koja ukoliko se realizuje rezultuje onemog
    ```
 
    mongoose.connect(uri, {
-   useNewUrlParser: true,
-   useUnifiedTopology: true,
-   poolSize: 10, // maksimalan broj konekcija je u ovom primeru 10
-   socketTimeoutMS: 30000 //definisano u milisekundama, dakle max idle time po konekciji je 30s
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      poolSize: 10, // maksimalan broj konekcija je u ovom primeru 10
+      socketTimeoutMS: 30000 //definisano u milisekundama, dakle max idle time po konekciji je 30s
    });
    ```
 
